@@ -39,6 +39,16 @@ var StatusLabel = map[Status]string{
 	Ignored:    "System / ignored",
 }
 
+// StatusTitle is the plural heading of each status in lists.
+var StatusTitle = map[Status]string{
+	Orphan:     "Likely orphans",
+	Suspect:    "No program, but recently used",
+	Portable:   "Possible portable programs",
+	Shared:     "Shared caches",
+	Associated: "Folders that belong to a program",
+	Ignored:    "System / ignored folders",
+}
+
 // KindLabel describes the content of dictionary folders.
 var KindLabel = map[string]string{
 	"models": "Models",

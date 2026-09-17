@@ -54,11 +54,16 @@ The GUI must be built on the target system.
 ## Usage
 
 ```bash
-dist/husk --out report            # scan, write the report to ./report, open the HTML
-dist/husk --help                  # options: --days, --min-mb, --all, --no-open, --workers
+dist/husk                         # scan, print the report to stdout (progress on stderr)
+dist/husk -v --show all           # every status, with match and notes
+dist/husk --report                # also write the HTML/CSV files and open the HTML page
+dist/husk --report --out report --no-open
+dist/husk --help                  # all options: --days, --min-mb, --all, --workers, ...
 ```
 
-Output: `husk_report_*.html/csv`, `husk_programs_*.csv`, `husk_path_*.csv`, `husk_suggestions_*.toml`.
+Report files (`--report`, default folder `husk` in the system temp folder):
+`husk_report_*.html/csv`, `husk_programs_*.csv`, `husk_path_*.csv`, `husk_suggestions_*.toml`.
+`husk-gui` always writes them and shows the same text as the CLI in its log.
 
 ## Local configuration
 

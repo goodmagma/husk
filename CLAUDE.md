@@ -8,7 +8,7 @@ Nome precedente: Ghostdir. **Nome scelto: Husk** (comando `husk`).
 ## Regole di lavoro
 
 - Nei commit **mai** `Co-Authored-By: Claude` né altre righe di attribuzione.
-- **Nessun commit** finché l'utente non lo chiede (riscrittura Go in corso).
+- Commit e push **solo quando l'utente lo chiede** (primo commit Go: `15cba54`, 17/09/2026).
 - Il PoC Python (`poc/`) resta solo libreria standard (3.11+) e legge `dictionary/windows.toml`.
 - I dizionari TOML sono condivisi da PoC e versione Go: stesso formato.
 - Sorgenti Go con fine riga LF (`.gitattributes`); controllare con `gofmt -l .`.
@@ -30,6 +30,12 @@ Scelte dell'utente:
 Ambiente dell'utente: Go 1.27.1 e GCC 16.1 WinLibs (`BrechtSanders.WinLibs.POSIX.UCRT`), entrambi
 con winget. Fyne v2.8.1 nel go.mod. Setup e comandi sono nel `README.md` (stile: pochi comandi, poche righe).
 
+Comportamento (richiesto dall'utente il 17/09/2026): la CLI di default stampa il report completo come un
+normale comando (sezioni per stato; `--show` sceglie gli stati elencati, default orphan,suspect,portable,shared;
+gli altri stati compaiono solo come riga di riepilogo); i file HTML/CSV solo con `--report`, in
+`%TEMP%\husk` di default (`report.DefaultDir()`). La GUI scrive sempre i file (default uguale, preferenza
+`reportDir`) e nel registro mostra lo stesso testo della CLI.
+
 Stato Go: CLI completa per Windows e verificata sul PC (stessa classificazione del PoC su 285 cartelle,
 ~10 s); Linux e macOS compilano (`GOOS=linux|darwin go vet ./...`) ma non sono ancora provati.
 GUI compilata (prima build ~7 minuti, eseguibile ~43 MB), si avvia; non ancora provata dall'utente.
@@ -45,7 +51,7 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 
 | Percorso | Cosa |
 |---|---|
-| `cmd/husk/` | CLI (`--days`, `--min-mb`, `--out`, `--all`, `--no-open`, `--workers`, `--version`) |
+| `cmd/husk/` | CLI: stampa il report su stdout (avanzamento su stderr); `--report` scrive e apre i file; `--show`, `-v`, `--days`, `--min-mb`, `--all`, `--out`, `--no-open`, `--workers`, `--version` |
 | `cmd/husk-gui/` | GUI Fyne (`FyneApp.toml`: ID `io.github.goodmagma.husk`) |
 | `dictionary/` | `windows.toml` (ex `apps.toml`), `linux.toml`, `darwin.toml` incorporati con `go:embed`; caricamento, unione con le voci utente, rilevamento |
 | `internal/model` | tipi comuni: `Evidence`, `Result`, stati, `PathIssue` |
@@ -53,7 +59,7 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 | `internal/match` | confronto per nome (porting di `Matcher`) |
 | `internal/platform` | per sistema: radici, fonti dei programmi, PATH, esclusioni, `OpenURL` (`windows.go`, `linux.go`, `darwin.go`, `unix.go`) |
 | `internal/scanner` | scansione parallela, classificazione, controllo del PATH (`pathcheck.go`) |
-| `internal/report` | HTML (`template.html` incorporato), CSV, suggerimenti |
+| `internal/report` | HTML (`template.html` incorporato), CSV, suggerimenti; `text.go`: report testuale (`WriteText`) usato da CLI e registro della GUI |
 | `poc/` | PoC Python: `husk.py`, `ignore.txt`, `apps.user.toml`; solo locale, escluso dal repository (`.gitignore`) |
 | `dist/` | eseguibili compilati (non va nel repository) |
 | `report/` | output delle scansioni (non va nel repository) |
@@ -63,7 +69,7 @@ all'eseguibile e in `os.UserConfigDir()/husk` (Windows: `%APPDATA%\husk`). Per l
 di `poc/apps.user.toml` in `dist/`.
 
 Comandi (PowerShell: ricaricare il PATH se Go non si trova):
-- CLI: `go build -o dist/husk.exe ./cmd/husk` poi `dist\husk.exe --out report`;
+- CLI: `go build -o dist/husk.exe ./cmd/husk` poi `dist\husk.exe` (testo) o `dist\husk.exe --report`;
 - GUI: `go build -ldflags "-H=windowsgui" -o dist/husk-gui.exe ./cmd/husk-gui` (serve gcc);
 - PoC: `py poc/husk.py --out report`.
 

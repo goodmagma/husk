@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -77,11 +77,6 @@ func main() {
 func (u *ui) build() fyne.CanvasObject {
 	prefs := u.app.Preferences()
 
-	title := widget.NewLabelWithStyle("Husk", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	intro := widget.NewLabel("Finds the folders left behind by uninstalled programs. " +
-		"Nothing is deleted: you get a report to review.")
-	intro.Wrapping = fyne.TextWrapWord
-
 	u.days = widget.NewEntry()
 	u.days.SetText(strconv.Itoa(prefs.IntWithFallback("days", 90)))
 	u.days.Validator = func(s string) error {
@@ -96,23 +91,19 @@ func (u *ui) build() fyne.CanvasObject {
 		labels = append(labels, m.label)
 	}
 	u.minSize = widget.NewSelect(labels, nil)
-	u.minSize.SetSelected(prefs.StringWithFallback("minSize", "all"))
+	u.minSize.SetSelected(labels[0])
+	if saved := prefs.String("minSize"); slices.Contains(labels, saved) {
+		u.minSize.SetSelected(saved)
+	}
 
 	u.outDir = widget.NewEntry()
-	u.outDir.SetText(prefs.StringWithFallback("outDir", defaultOutDir()))
+	u.outDir.SetText(prefs.StringWithFallback("reportDir", report.DefaultDir()))
 	browse := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), u.chooseOutDir)
 
 	u.all = widget.NewCheck("Include system folders", nil)
 	u.all.SetChecked(prefs.BoolWithFallback("all", false))
 	u.autoOpn = widget.NewCheck("Open the report when done", nil)
 	u.autoOpn.SetChecked(prefs.BoolWithFallback("autoOpen", true))
-
-	form := widget.NewForm(
-		widget.NewFormItem("Orphan after (days without changes)", u.days),
-		widget.NewFormItem("Minimum size (folders found by heuristic)", u.minSize),
-		widget.NewFormItem("Report folder", container.NewBorder(nil, nil, nil, browse, u.outDir)),
-		widget.NewFormItem("", container.NewHBox(u.all, u.autoOpn)),
-	)
 
 	u.scanBtn = widget.NewButtonWithIcon("Scan", theme.SearchIcon(), u.startScan)
 	u.scanBtn.Importance = widget.HighImportance
@@ -130,28 +121,26 @@ func (u *ui) build() fyne.CanvasObject {
 	u.summary = container.NewGridWithColumns(3)
 	u.actions = container.NewHBox()
 	u.log = widget.NewLabel("")
-	u.log.Wrapping = fyne.TextWrapWord
 	u.log.TextStyle = fyne.TextStyle{Monospace: true}
 
+	// options in three compact rows
+	daysBox := container.NewGridWrap(fyne.NewSize(90, u.days.MinSize().Height), u.days)
+	limits := container.NewHBox(
+		widget.NewLabel("Orphan after"), daysBox, widget.NewLabel("days without changes"),
+		layout.NewSpacer(),
+		widget.NewLabel("Minimum size (heuristic)"), u.minSize,
+	)
+	folder := container.NewBorder(nil, nil, widget.NewLabel("Report folder"), browse, u.outDir)
+	run := container.NewHBox(u.all, u.autoOpn, layout.NewSpacer(), u.cancelBtn, u.scanBtn)
+	status := container.NewBorder(nil, nil, nil, widget.NewLabel("Husk "+version), u.phase)
+
 	top := container.NewVBox(
-		title, intro,
-		widget.NewCard("", "Options", form),
-		container.NewHBox(u.scanBtn, u.cancelBtn, layout.NewSpacer(), widget.NewLabel("Husk "+version)),
-		u.phase, u.progress,
+		limits, folder, run,
+		widget.NewSeparator(),
+		status, u.progress,
 		u.summary, u.actions,
 	)
-	return container.NewBorder(top, nil, nil, nil, container.NewVScroll(u.log))
-}
-
-func defaultOutDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "."
-	}
-	if st, err := os.Stat(filepath.Join(home, "Documents")); err == nil && st.IsDir() {
-		return filepath.Join(home, "Documents", "Husk")
-	}
-	return filepath.Join(home, "Husk")
+	return container.NewBorder(top, nil, nil, nil, container.NewScroll(u.log))
 }
 
 func (u *ui) chooseOutDir() {
@@ -183,7 +172,7 @@ func (u *ui) options() (scanner.Options, error) {
 	prefs := u.app.Preferences()
 	prefs.SetInt("days", opt.Days)
 	prefs.SetString("minSize", u.minSize.Selected)
-	prefs.SetString("outDir", u.outDir.Text)
+	prefs.SetString("reportDir", u.outDir.Text)
 	prefs.SetBool("all", opt.All)
 	prefs.SetBool("autoOpen", u.autoOpn.Checked)
 	return opt, nil
@@ -276,28 +265,8 @@ func (u *ui) showResults(rep *scanner.Report) {
 	}
 
 	var b strings.Builder
-	b.WriteString("Installed programs:\n")
-	for _, s := range rep.Sources {
-		fmt.Fprintf(&b, "  %-12s %5d items\n", s.Label, s.Count)
-	}
-	fmt.Fprintf(&b, "Dictionary: %d entries; %d/%d programs detected, %d known folders found\n",
-		len(rep.Dictionary.Entries), rep.Installed, rep.Apps, rep.KnownPaths)
-	for _, l := range rep.Dictionary.Loaded {
-		b.WriteString("  " + l + "\n")
-	}
-	for _, e := range rep.Dictionary.Errors {
-		b.WriteString("  ! " + e + "\n")
-	}
-	if len(rep.PathIssues) > 0 {
-		b.WriteString("\nPATH entries to review:\n")
-		for _, i := range rep.PathIssues {
-			fmt.Fprintf(&b, "  [%s] %s: %s\n", i.Scope, i.Problem, i.Entry)
-		}
-	}
-	b.WriteString("\nFiles:\n  " + u.files.HTML + "\n  " + u.files.CSV + "\n  " + u.files.Programs + "\n  " + u.files.Path + "\n")
-	if u.files.Suggestions != "" {
-		b.WriteString("  " + u.files.Suggestions + "\n")
-	}
+	report.WriteText(&b, rep, report.TextOptions{Statuses: report.DefaultStatuses})
+	report.WriteFileList(&b, u.files)
 	u.log.SetText(b.String())
 }
 

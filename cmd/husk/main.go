@@ -1,7 +1,11 @@
 // Command husk finds the leftover folders of uninstalled programs (read-only).
+//
+// By default it prints the report to standard output; progress goes to standard error.
+// With --report it also writes the HTML/CSV files and opens the HTML page.
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -10,7 +14,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/goodmagma/husk/internal/model"
 	"github.com/goodmagma/husk/internal/platform"
 	"github.com/goodmagma/husk/internal/report"
 	"github.com/goodmagma/husk/internal/scanner"
@@ -27,15 +30,19 @@ func run() int {
 	opt := scanner.DefaultOptions()
 	fs := flag.NewFlagSet("husk", flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Husk %s - report of folders left behind by uninstalled programs (read-only).\n\n", version)
+		fmt.Fprintf(fs.Output(), "Husk %s - lists the folders left behind by uninstalled programs (read-only).\n\n", version)
 		fmt.Fprintf(fs.Output(), "Usage: husk [options]\n\nOptions:\n")
 		fs.PrintDefaults()
 	}
 	fs.IntVar(&opt.Days, "days", opt.Days, "days without changes before a folder is an orphan")
 	minMB := fs.Int64("min-mb", 0, "skip folders found by the heuristic below N MB (0: all)")
-	out := fs.String("out", ".", "output folder")
 	fs.BoolVar(&opt.All, "all", false, "include system folders")
-	noOpen := fs.Bool("no-open", false, "do not open the report when done")
+	show := fs.String("show", "orphan,suspect,portable,shared",
+		"statuses to list folder by folder: orphan, suspect, portable, shared, associated, ignored, or all")
+	verbose := fs.Bool("v", false, "print the match and the notes of each folder")
+	writeReport := fs.Bool("report", false, "write the HTML/CSV report files and open the HTML page")
+	out := fs.String("out", report.DefaultDir(), "folder for the report files (with --report)")
+	noOpen := fs.Bool("no-open", false, "with --report, do not open the HTML page")
 	fs.IntVar(&opt.Workers, "workers", opt.Workers, "folders scanned in parallel")
 	showVersion := fs.Bool("version", false, "print the version and exit")
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -48,105 +55,80 @@ func run() int {
 		fmt.Printf("husk %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
 		return 0
 	}
+	statuses, err := report.ParseStatuses(*show)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 2
+	}
 	opt.MinSize = *minMB * 1024 * 1024
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	interactive := isTerminal()
-	lastPhase := ""
-	rep, err := scanner.Run(ctx, opt, func(phase string, done, total int) {
-		if phase != lastPhase {
-			if lastPhase != "" && interactive {
-				fmt.Println()
-			}
-			lastPhase = phase
-			if total == 0 || !interactive {
-				fmt.Println(phase + "...")
-			}
-		}
-		if total > 0 && interactive {
-			fmt.Printf("\r%s: %d/%d", phase, done, total)
-		}
-	})
-	if interactive {
-		fmt.Println()
-	}
+	progress, clearProgress := progressPrinter()
+	rep, err := scanner.Run(ctx, opt, progress)
+	clearProgress()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Scan interrupted:", err)
 		return 1
 	}
 
-	for _, s := range rep.Sources {
-		fmt.Printf("  %-12s %5d items\n", s.Label, s.Count)
+	w := bufio.NewWriter(os.Stdout)
+	defer w.Flush()
+	report.WriteText(w, rep, report.TextOptions{Statuses: statuses, Verbose: *verbose})
+	if !*writeReport {
+		return 0
 	}
-	fmt.Printf("Dictionary: %d entries; %d/%d programs detected, %d known folders found\n",
-		len(rep.Dictionary.Entries), rep.Installed, rep.Apps, rep.KnownPaths)
-	for _, l := range rep.Dictionary.Loaded {
-		fmt.Println("  " + l)
-	}
-	for _, e := range rep.Dictionary.Errors {
-		fmt.Fprintln(os.Stderr, "  ! "+e)
-	}
-
-	printSummary(rep)
 
 	dir, _ := filepath.Abs(*out)
 	files, err := report.Write(rep, dir, version)
 	if err != nil {
+		w.Flush()
 		fmt.Fprintln(os.Stderr, "Cannot write the report:", err)
 		return 1
 	}
-	fmt.Printf("\nReport:      %s\n", files.HTML)
-	fmt.Printf("Programs:    %s\n", files.Programs)
-	fmt.Printf("PATH:        %s\n", files.Path)
-	if files.SuggestN > 0 {
-		fmt.Printf("Suggestions: %s (%d entries)\n", files.Suggestions, files.SuggestN)
-	}
-	fmt.Printf("Time:        %.1fs\n", rep.Duration.Seconds())
-
+	report.WriteFileList(w, files)
 	if !*noOpen {
 		if err := platform.OpenURL(files.HTML); err != nil {
+			w.Flush()
 			fmt.Fprintln(os.Stderr, "Cannot open the report:", err)
 		}
 	}
 	return 0
 }
 
-func printSummary(rep *scanner.Report) {
-	var orphans []model.Result
-	var orphanSize, sharedSize int64
-	shared := 0
-	for _, r := range rep.Results {
-		switch r.Status {
-		case model.Orphan:
-			orphans = append(orphans, r)
-			orphanSize += r.Size
-		case model.Shared:
-			shared++
-			sharedSize += r.Size
+// progressPrinter shows the scan phases on standard error: a single live line on a terminal,
+// one line per phase otherwise. The returned function clears the live line.
+func progressPrinter() (scanner.Progress, func()) {
+	interactive := isTerminal(os.Stderr)
+	lastPhase := ""
+	clear := func() {
+		if interactive {
+			fmt.Fprintf(os.Stderr, "\r%*s\r", 60, "")
 		}
 	}
-	fmt.Printf("\nLikely orphans: %d (%s)\n", len(orphans), report.FmtSize(orphanSize))
-	for i, r := range orphans {
-		if i == 15 {
-			fmt.Printf("  ... and %d more in the report\n", len(orphans)-15)
-			break
+	progress := func(phase string, done, total int) {
+		if !interactive {
+			if phase != lastPhase {
+				fmt.Fprintln(os.Stderr, phase+"...")
+			}
+			lastPhase = phase
+			return
 		}
-		fmt.Printf("  %10s  %s  [%.4s]  %s\n", report.FmtSize(r.Size), report.FmtDate(r.LastWrite), r.Source, r.Path)
-	}
-	if shared > 0 {
-		fmt.Printf("Shared caches: %d (%s)\n", shared, report.FmtSize(sharedSize))
-	}
-	if len(rep.PathIssues) > 0 {
-		fmt.Printf("PATH entries to review: %d\n", len(rep.PathIssues))
-		for _, i := range rep.PathIssues {
-			fmt.Printf("  [%s] %s: %s\n", i.Scope, i.Problem, i.Entry)
+		if phase != lastPhase {
+			clear()
+			lastPhase = phase
+		}
+		if total > 0 {
+			fmt.Fprintf(os.Stderr, "\r%s: %d/%d", phase, done, total)
+		} else {
+			fmt.Fprintf(os.Stderr, "\r%s...", phase)
 		}
 	}
+	return progress, clear
 }
 
-func isTerminal() bool {
-	st, err := os.Stdout.Stat()
+func isTerminal(f *os.File) bool {
+	st, err := f.Stat()
 	return err == nil && st.Mode()&os.ModeCharDevice != 0
 }
