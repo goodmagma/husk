@@ -32,7 +32,8 @@ winres() {
     return
   fi
   local numeric="${version%%-*}"
-  go run "$winres" make --in "$dir/winres/winres.json" --out "$dir/rsrc" --arch amd64,arm64 \
+  # go-winres runs on this machine: build it for the host, not for the target
+  GOOS="$(go env GOHOSTOS)" GOARCH="$(go env GOHOSTARCH)" go run "$winres" make --in "$dir/winres/winres.json" --out "$dir/rsrc" --arch amd64,arm64 \
     --product-version "$numeric" --file-version "$numeric"
 }
 

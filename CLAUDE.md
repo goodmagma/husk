@@ -90,7 +90,9 @@ Risorse Windows (icona nel file .exe e dettagli del file, dal 17/09/2026): `cmd/
 `cmd/husk-gui/winres/winres.json` → `rsrc_windows_{amd64,arm64}.syso` (nel repository, generati con
 `go run github.com/tc-hib/go-winres@v0.3.3 make ...`). La GUI **non** ha il manifest: MinGW ne aggiunge
 uno suo quando collega con CGO e due manifest fanno fallire il link ("multiple non-default manifests").
-`build.sh` rigenera i .syso se `VERSION` è diversa dal codice o con `WINRES=1` (release). In release la GUI
+`build.sh` rigenera i .syso se `VERSION` è diversa dal codice o con `WINRES=1` (release). `go-winres` va
+compilato per l'host (`GOOS=$(go env GOHOSTOS)`): il primo tag `v0.1.1` è fallito nel job CLI su Linux
+con "exec format error" perché ereditava `GOOS=windows` (corretto il 17/09/2026, verificato in Docker). In release la GUI
 Windows si compila con `build.sh` e non più con `fyne package` (avrebbe creato un secondo .syso).
 Icone: `assets/icon.png` (256) e `icon-48/32/16.png`.
 Versione attuale **0.1.1** (non ancora rilasciata; 0.1.0 è il tag su `f8e4f36`): va aggiornata in
