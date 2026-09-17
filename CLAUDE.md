@@ -93,7 +93,7 @@ file di suggerimenti con 68 voci ancora da rivedere.
 ## Prossimi passi
 
 1. Cartella del progetto già rinominata `husk`; script, report e output già rinominati (17/09/2026).
-2. `git init`, `.gitignore` con `report/`, primo commit (senza attribuzioni).
+2. Repository creato: https://github.com/goodmagma/husk (branch `main`, 17/09/2026).
 3. Rivedere con l'utente gli altri orfani piccoli e il file dei suggerimenti.
    Candidati visti: `.bun`, `.qodo`, `.kilocode-shell-integrations`, `.openwork`, `PDFgear`, `Syncthing`,
    `.liferay-ide`, `.semgrep`, `.triton`, `.dspy_cache`, `Programs\AnythingLLM` e `Program Files\Upscayl` (vuote).
