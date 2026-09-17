@@ -235,7 +235,9 @@ revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
    (GLFW 3.4); per riprodurre la CI Linux c'è Docker Desktop (`golang:1.27`). `fyne package` (fyne.io/tools
    v1.7.2) non accetta `-ldflags`, crea `cmd/husk-gui/Husk.exe` e incrementa `Build` in `FyneApp.toml`
    (in locale annullare la modifica). Le API GitHub senza token hanno un limite di 60 richieste/ora:
-   monitorare con intervalli lunghi. Da fare: provare i pacchetti su Linux e macOS reali; firma del
+   monitorare con intervalli lunghi. `softprops/action-gh-release` v3 carica in parallelo e al secondo tag
+   `v0.1.1` è fallito con "Error creating asset temp dir" lasciando la release in **bozza** senza un file:
+   ora `preserve_order: true` (caricamento sequenziale). Le bozze non compaiono nelle API senza token. Da fare: provare i pacchetti su Linux e macOS reali; firma del
    codice (Windows SmartScreen, macOS Gatekeeper) non ancora presente.
 5. Residui come file: **fatto per la 0.1.1** (vedi "Scansione dei file"); mancano i `.plist` di macOS
    (`~/Library/Preferences` contiene soprattutto file) e i file sciolti fuori dal profilo.

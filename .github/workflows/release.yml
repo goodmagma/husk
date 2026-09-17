@@ -156,5 +156,7 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           files: out/*
+          # one upload at a time: parallel uploads failed with "Error creating asset temp dir"
+          preserve_order: true
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
