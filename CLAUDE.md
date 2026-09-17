@@ -9,6 +9,8 @@ Nome precedente: Ghostdir. **Nome scelto: Husk** (comando `husk`).
 
 - Nei commit **mai** `Co-Authored-By: Claude` né altre righe di attribuzione.
 - Commit e push **solo quando l'utente lo chiede** (primo commit Go: `15cba54`, 17/09/2026).
+- Branch: si lavora su `main` (niente `develop`, decisione del 17/09/2026); le versioni sono i tag `v*`.
+  Per modifiche corpose: branch brevi con pull request verso `main` (la CI gira sulle PR).
 - Il PoC Python (`poc/`) resta solo libreria standard (3.11+) e legge `dictionary/windows.toml`.
 - I dizionari TOML sono condivisi da PoC e versione Go: stesso formato.
 - Sorgenti Go con fine riga LF (`.gitattributes`); controllare con `gofmt -l .`.
@@ -59,8 +61,9 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 | `internal/match` | confronto per nome (porting di `Matcher`) |
 | `internal/platform` | per sistema: radici, fonti dei programmi, PATH, esclusioni, `OpenURL` (`windows.go`, `linux.go`, `darwin.go`, `unix.go`) |
 | `internal/scanner` | scansione parallela, classificazione, controllo del PATH (`pathcheck.go`) |
-| `internal/version` | versione del programma (0.1.0), da allineare con `cmd/husk-gui/FyneApp.toml`; sovrascrivibile con `-ldflags -X .../internal/version.Version=...` |
+| `internal/version` | versione del programma (0.1.1), da allineare con `cmd/husk-gui/FyneApp.toml`; sovrascrivibile con `-ldflags -X .../internal/version.Version=...` |
 | `assets/` | `icon.svg` (logo: cartella vuota con lente su quadrato arancione; icona della finestra via `go:embed`, logo del README), `icon.png` 256 px per `fyne package` (`FyneApp.toml`). Il renderer SVG di Fyne ignora `rx` sui `rect` e non scala bene gli spessori: disegnare con `path` e rigenerare il PNG con `go run ./tools/svg2png assets/icon.svg assets/icon.png 256` |
+| `scripts/build.sh` | compilazione di CLI e GUI (vedi Comandi) |
 | `tools/svg2png` | converte l'SVG in PNG (disegna a 256 px e ridimensiona) |
 | `.github/workflows/` | `ci.yml` (gofmt, vet, test, build sui 3 sistemi), `release.yml` (tag `v*`: CLI per 6 target senza CGO, GUI con `fyne package` su runner nativi, macOS amd64 cross su Apple silicon, pubblicazione con `softprops/action-gh-release`; avvio manuale = solo artefatti) |
 | `.github/scripts/version.sh` | versione dal tag (`v1.2.3` → `1.2.3`, manuale → `<versione>-dev.<commit>`), scritta in `internal/version/version.go` solo nel runner |
@@ -74,10 +77,24 @@ File personali della versione Go (`dictionary.UserDirs()`): `apps.user.toml` e `
 all'eseguibile e in `os.UserConfigDir()/husk` (Windows: `%APPDATA%\husk`). Per le prove c'è una copia
 di `poc/apps.user.toml` in `dist/`.
 
-Comandi (PowerShell: ricaricare il PATH se Go non si trova):
-- CLI: `go build -o dist/husk.exe ./cmd/husk` poi `dist\husk.exe` (testo) o `dist\husk.exe --report`;
-- GUI: `go build -ldflags "-H=windowsgui" -o dist/husk-gui.exe ./cmd/husk-gui` (serve gcc);
+Comandi (istruzioni complete per l'utente nel README, sezione Build):
+- compilazione: `bash scripts/build.sh [cli|gui|all]` (Git Bash; da PowerShell usare
+  `"C:\Program Files\Git\bin\bash.exe"`, perché `bash` in System32 è WSL). Variabili: `GOOS`, `GOARCH`,
+  `VERSION`, `OUT`, `WINRES=1`. Lo usano anche `ci.yml` e `release.yml`;
+- la shell Bash di Claude Code può avere un PATH vecchio: aggiungere `/c/Program Files/Go/bin` e la cartella
+  `mingw64/bin` di WinLibs (in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\BrechtSanders.WinLibs...`);
+- uso: `dist\husk.exe` (testo) o `dist\husk.exe --report`;
 - PoC: `py poc/husk.py --out report`.
+
+Risorse Windows (icona nel file .exe e dettagli del file, dal 17/09/2026): `cmd/husk/winres/winres.json` e
+`cmd/husk-gui/winres/winres.json` → `rsrc_windows_{amd64,arm64}.syso` (nel repository, generati con
+`go run github.com/tc-hib/go-winres@v0.3.3 make ...`). La GUI **non** ha il manifest: MinGW ne aggiunge
+uno suo quando collega con CGO e due manifest fanno fallire il link ("multiple non-default manifests").
+`build.sh` rigenera i .syso se `VERSION` è diversa dal codice o con `WINRES=1` (release). In release la GUI
+Windows si compila con `build.sh` e non più con `fyne package` (avrebbe creato un secondo .syso).
+Icone: `assets/icon.png` (256) e `icon-48/32/16.png`.
+Versione attuale **0.1.1** (non ancora rilasciata; 0.1.0 è il tag su `f8e4f36`): va aggiornata in
+`internal/version/version.go`, `cmd/husk-gui/FyneApp.toml`, i due `winres.json` e il README.
 
 Fonti per sistema:
 - Windows: registro, menu Start, Store (`Get-AppxPackage`), processi (Toolhelp32), PATH, portabili;
@@ -141,7 +158,7 @@ voce `[[shared]]` "User executables"; .NET SDK aggiunto anche a linux/darwin.tom
 Test: `internal/scanner/pathcheck_test.go` (`CheckPath`, `Dictionary.Owner`). Sezione in fondo al report
 HTML, file `husk_path.csv`, elenco in console.
 
-Report HTML: filtri per stato, menu "Dimensione minima" (default 100 MB), colonne ordinabili.
+Report HTML: filtri per stato, menu "Minimum size" (default "all", prima 100 MB: nascondeva i piccoli residui del dizionario), colonne ordinabili.
 In console: i primi 15 orfani per dimensione.
 
 ### Risultati verificati sul PC dell'utente
@@ -195,15 +212,15 @@ revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
 2. Test automatici (`go test ./...`): ci sono solo `CheckPath` e `Dictionary.Owner`; mancano matcher, dizionario (unione delle voci),
    pathutil, classificazione.
 3. Provare Linux e macOS (macchine reali o CI) e ampliare `linux.toml` e `darwin.toml`.
-4. Pipeline GitHub Actions: la prima CI (17/09/2026) è passata su Windows e macOS e fallita su Linux
-   perché GLFW 3.4 compila anche Wayland: servono `libwayland-dev libxkbcommon-dev wayland-protocols`
-   oltre a `gcc libgl1-mesa-dev xorg-dev` (verificato in Docker con `golang:1.27`; Docker Desktop è
-   installato e serve per riprodurre la CI Linux). Action aggiornate a Node 24 (checkout/setup-go v7,
-   upload-artifact v7, download-artifact v8, action-gh-release v3). Release non ancora eseguita: provare con avvio manuale di
-   Release, poi tag `v0.1.0`. Punti incerti: gcc sul runner Windows (fallback `choco install mingw`),
-   GUI macOS amd64 compilata da Apple silicon, nome/posizione di `Husk.tar.xz` su Linux.
-   `fyne package` (fyne.io/tools v1.7.2) non accetta `-ldflags`, crea `cmd/husk-gui/Husk.exe` e
-   incrementa `Build` in `FyneApp.toml` (in locale annullare la modifica).
+4. Pipeline GitHub Actions funzionanti. **Release 0.1.0 pubblicata il 17/09/2026**
+   (https://github.com/goodmagma/husk/releases/tag/v0.1.0, tag su `f8e4f36`): CLI per Windows/Linux/macOS
+   amd64+arm64 (~1,3 MB), GUI Windows amd64, Linux amd64/arm64 (`.tar.xz`), macOS amd64/arm64 (`.app` zip,
+   ~12 MB), `SHA256SUMS.txt`. Linux richiede anche `libwayland-dev libxkbcommon-dev wayland-protocols`
+   (GLFW 3.4); per riprodurre la CI Linux c'è Docker Desktop (`golang:1.27`). `fyne package` (fyne.io/tools
+   v1.7.2) non accetta `-ldflags`, crea `cmd/husk-gui/Husk.exe` e incrementa `Build` in `FyneApp.toml`
+   (in locale annullare la modifica). Le API GitHub senza token hanno un limite di 60 richieste/ora:
+   monitorare con intervalli lunghi. Da fare: provare i pacchetti su Linux e macOS reali; firma del
+   codice (Windows SmartScreen, macOS Gatekeeper) non ancora presente.
 5. Supporto ai **residui come file singoli** (es. `%USERPROFILE%\.aider.conf.yml`, `.plist` su macOS).
 6. Nuove fonti di programmi installati: winget, Scoop, Chocolatey.
 7. Dopo la prima release: tabella dei risultati dentro la GUI, eventuali grafici.

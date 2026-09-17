@@ -3,3 +3,5 @@ go.mod text eol=lf
 go.sum text eol=lf
 *.sh   text eol=lf
 *.yml  text eol=lf
+*.json text eol=lf
+*.syso binary

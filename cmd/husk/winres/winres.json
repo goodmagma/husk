@@ -1,0 +1,48 @@
+{
+  "RT_GROUP_ICON": {
+    "APP": {
+      "0000": [
+        "../../../assets/icon.png",
+        "../../../assets/icon-48.png",
+        "../../../assets/icon-32.png",
+        "../../../assets/icon-16.png"
+      ]
+    }
+  },
+  "RT_MANIFEST": {
+    "#1": {
+      "0409": {
+        "identity": {
+          "name": "io.github.goodmagma.husk.cli",
+          "version": ""
+        },
+        "description": "Husk command line",
+        "minimum-os": "win7",
+        "execution-level": "as invoker",
+        "long-path-aware": true
+      }
+    }
+  },
+  "RT_VERSION": {
+    "#1": {
+      "0000": {
+        "fixed": {
+          "file_version": "0.1.1.0",
+          "product_version": "0.1.1.0"
+        },
+        "info": {
+          "0409": {
+            "CompanyName": "goodmagma",
+            "FileDescription": "Husk - leftover folders of uninstalled programs (command line)",
+            "FileVersion": "0.1.1",
+            "InternalName": "husk",
+            "LegalCopyright": "goodmagma",
+            "OriginalFilename": "husk.exe",
+            "ProductName": "Husk",
+            "ProductVersion": "0.1.1"
+          }
+        }
+      }
+    }
+  }
+}

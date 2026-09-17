@@ -49,4 +49,5 @@ jobs:
         run: go test ./...
 
       - name: Build
-        run: go build -o dist/ ./cmd/husk ./cmd/husk-gui
+        shell: bash
+        run: bash scripts/build.sh all

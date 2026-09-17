@@ -3,7 +3,7 @@
 # Husk
 
 Finds the folders left behind by uninstalled programs. Report only: nothing is ever deleted.
-Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne). Version 0.1.0.
+Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne). Version 0.1.1.
 
 ![husk-gui](docs/images/husk-gui.png)
 
@@ -38,38 +38,77 @@ gcc --version
 
 ## Build
 
+`scripts/build.sh` builds both programs into `dist/`, with the version from `internal/version/version.go`
+and, on Windows, the icon and file details. The GitHub pipelines use the same script.
+
 ```bash
+git clone https://github.com/goodmagma/husk.git
+cd husk
 go mod download
-
-# CLI (pure Go, builds for any OS)
-go build -o dist/husk ./cmd/husk
-
-# GUI (the first build takes a few minutes)
-go build -o dist/husk-gui ./cmd/husk-gui
 ```
 
-On Windows: add `.exe` to the output names and `-ldflags "-H=windowsgui"` to the GUI build to hide the console.
-
-CLI for other systems:
+Windows (Git Bash; from PowerShell or cmd use `"C:\Program Files\Git\bin\bash.exe"` instead of `bash`,
+not the WSL `bash`):
 
 ```bash
-GOOS=linux GOARCH=amd64 go build -o dist/husk-linux ./cmd/husk
-GOOS=darwin GOARCH=arm64 go build -o dist/husk-macos ./cmd/husk
+bash scripts/build.sh            # dist/husk.exe and dist/husk-gui.exe
+bash scripts/build.sh cli        # only dist/husk.exe
+bash scripts/build.sh gui        # only dist/husk-gui.exe (the first build takes a few minutes)
 ```
 
-The GUI must be built on the target system.
+Linux and macOS:
 
-Icon: `assets/icon.svg` (window icon and logo); after changing it, regenerate the PNG used for packaging:
+```bash
+bash scripts/build.sh            # dist/husk and dist/husk-gui
+```
+
+Other targets for the CLI (the GUI must be built on the target system):
+
+```bash
+GOOS=linux GOARCH=arm64 bash scripts/build.sh cli
+GOOS=darwin GOARCH=arm64 OUT=dist/macos bash scripts/build.sh cli
+GOOS=windows GOARCH=amd64 bash scripts/build.sh cli
+```
+
+Without the script, the equivalent `go` commands are:
+
+```bash
+# Windows
+go build -trimpath -ldflags "-s -w" -o dist/husk.exe ./cmd/husk
+go build -trimpath -ldflags "-s -w -H=windowsgui" -o dist/husk-gui.exe ./cmd/husk-gui
+
+# Linux / macOS
+go build -trimpath -ldflags "-s -w" -o dist/husk ./cmd/husk
+go build -trimpath -ldflags "-s -w" -o dist/husk-gui ./cmd/husk-gui
+```
+
+Linux and macOS packages with desktop entry / `.app` bundle (as in the release):
+
+```bash
+go install fyne.io/tools/cmd/fyne@v1.7.2
+fyne package --os linux --src cmd/husk-gui --release     # Husk.tar.xz
+fyne package --os darwin --src cmd/husk-gui --release    # Husk.app
+```
+
+`fyne package` also bumps `Build` in `cmd/husk-gui/FyneApp.toml`: revert that change before committing.
+Do not use it for Windows: the icon already comes from `cmd/husk-gui/rsrc_windows_*.syso`.
+
+### Version and icon
+
+The version is in `internal/version/version.go`, `cmd/husk-gui/FyneApp.toml` and
+`cmd/*/winres/winres.json` (`file_version`, `product_version`, `FileVersion`, `ProductVersion`).
+After changing them, or the icon, regenerate the assets and the Windows resources:
 
 ```bash
 go run ./tools/svg2png assets/icon.svg assets/icon.png 256
+go run ./tools/svg2png assets/icon.svg assets/icon-48.png 48
+go run ./tools/svg2png assets/icon.svg assets/icon-32.png 32
+go run ./tools/svg2png assets/icon.svg assets/icon-16.png 16
+go run github.com/tc-hib/go-winres@v0.3.3 make --in cmd/husk/winres/winres.json --out cmd/husk/rsrc --arch amd64,arm64
+go run github.com/tc-hib/go-winres@v0.3.3 make --in cmd/husk-gui/winres/winres.json --out cmd/husk-gui/rsrc --arch amd64,arm64
 ```
 
-Version: `internal/version/version.go` (keep `cmd/husk-gui/FyneApp.toml` in sync), or at build time:
-
-```bash
-go build -ldflags "-X github.com/goodmagma/husk/internal/version.Version=0.2.0" -o dist/husk ./cmd/husk
-```
+A one-off version can also be passed at build time: `VERSION=0.2.0-dev bash scripts/build.sh`.
 
 ## Usage
 
@@ -112,23 +151,17 @@ GitHub Actions (`.github/workflows`):
 - `ci.yml`: on every push to `main` and pull request, `gofmt`, `go vet`, `go test` and build on Windows, Linux, macOS.
 - `release.yml`: on a `v*` tag, builds and publishes a GitHub release:
   - `husk_<version>_<os>_<arch>`: CLI for Windows, Linux and macOS (amd64, arm64);
-  - `husk-gui_<version>_<os>_<arch>`: GUI packaged with `fyne package` (Windows `.exe` with icon,
-    Linux `.tar.xz` with desktop entry, macOS `.app`), Windows amd64, Linux amd64/arm64, macOS amd64/arm64;
+  - `husk-gui_<version>_<os>_<arch>`: GUI for Windows amd64 (`.exe` with icon, built with
+    `scripts/build.sh`), Linux amd64/arm64 (`.tar.xz` with desktop entry) and macOS amd64/arm64 (`.app`),
+    both packaged with `fyne package`;
   - `SHA256SUMS.txt`.
 
   The version comes from the tag. A manual run (Actions → Release → Run workflow) builds the packages
   without publishing them.
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Local GUI package (the output is `cmd/husk-gui/Husk.exe`; `fyne package` also bumps `Build` in `FyneApp.toml`):
-
-```bash
-go install fyne.io/tools/cmd/fyne@v1.7.2
-fyne package --os windows --src cmd/husk-gui --release
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 ## Disclaimer

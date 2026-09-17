@@ -29,15 +29,13 @@ jobs:
 
       - name: Build
         env:
-          CGO_ENABLED: "0"
+          WINRES: "1"
         run: |
           mkdir -p out
           for target in windows/amd64 windows/arm64 linux/amd64 linux/arm64 darwin/amd64 darwin/arm64; do
             os="${target%/*}"; arch="${target#*/}"
             name="husk_${VERSION}_${os/darwin/macos}_${arch}"
-            exe="husk"; [ "$os" = windows ] && exe="husk.exe"
-            mkdir -p "build/$name"
-            GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "build/$name/$exe" ./cmd/husk
+            GOOS="$os" GOARCH="$arch" OUT="build/$name" bash scripts/build.sh cli
             cp README.md "build/$name/"
             if [ "$os" = windows ]; then
               (cd build && zip -qr "../out/$name.zip" "$name")
@@ -99,6 +97,7 @@ jobs:
           }
 
       - name: Install fyne tool
+        if: matrix.os != 'windows'
         run: go install "$FYNE_TOOL"
 
       - name: Version
@@ -108,15 +107,18 @@ jobs:
         env:
           CGO_ENABLED: "1"
           GOARCH: ${{ matrix.goarch }}
+          WINRES: "1"
         run: |
           [ -n "$GOARCH" ] || unset GOARCH
-          fyne package --os "${{ matrix.os }}" --src cmd/husk-gui --release --app-version "${VERSION%%-*}"
           mkdir -p out
           name="husk-gui_${VERSION}_${{ matrix.name }}"
+          # Windows: plain build (icon and version come from the .syso resources);
+          # Linux and macOS: fyne package, for the desktop entry and the .app bundle
+          [ "${{ matrix.os }}" = windows ] ||
+            fyne package --os "${{ matrix.os }}" --src cmd/husk-gui --release --app-version "${VERSION%%-*}"
           case "${{ matrix.os }}" in
             windows)
-              mkdir -p "build/$name"
-              mv cmd/husk-gui/Husk.exe "build/$name/husk-gui.exe"
+              OUT="build/$name" bash scripts/build.sh gui
               cp README.md "build/$name/"
               (cd build && 7z a -tzip "../out/$name.zip" "$name" > /dev/null)
               ;;
