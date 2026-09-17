@@ -213,6 +213,12 @@ func Run(ctx context.Context, opt Options, progress Progress) (*Report, error) {
 			rep.Results = append(rep.Results, *r)
 		}
 	}
+
+	// 5) Files: dictionary patterns and loose files in the profile folder
+	progress("Scanning files", 0, 0)
+	rep.Results = append(rep.Results, scanFiles(dict, roots, opt, now, func(p string) bool {
+		return dict.IgnorePaths[pathutil.Key(p)] || dict.IgnoreNames[strings.ToLower(filepath.Base(p))]
+	})...)
 	order := map[model.Status]int{}
 	for i, s := range model.StatusOrder {
 		order[s] = i
@@ -225,7 +231,7 @@ func Run(ctx context.Context, opt Options, progress Progress) (*Report, error) {
 		return a.Size > b.Size
 	})
 
-	// 5) PATH variable
+	// 6) PATH variable
 	progress("Checking PATH", 0, 0)
 	rep.PathIssues = CheckPath(platform.PathVariables(), rep.Results, func(p string) (Owner, bool) {
 		e, ok := dict.Owner(p)
@@ -319,7 +325,7 @@ func classify(c candidate, m measurement, now time.Time, opt Options, dictIndex 
 	if m.size < opt.MinSize && !inDict {
 		return nil // dictionary folders are always listed
 	}
-	r := &model.Result{Path: c.path, Area: c.area, Size: m.size, Files: m.files, LastWrite: m.last}
+	r := &model.Result{Type: model.TypeFolder, Path: c.path, Area: c.area, Size: m.size, Files: m.files, LastWrite: m.last}
 	old := now.Sub(time.Unix(m.last, 0)) >= time.Duration(opt.Days)*24*time.Hour
 	var extra []string
 	if names := contains[k]; len(names) > 0 {

@@ -49,7 +49,10 @@ paths = [
 name = "Aider"
 category = "ai"
 detect.exe = ["aider"]
-paths = [ { path = '~/.aider', kind = "cache" } ]
+paths = [
+  { path = '~/.aider', kind = "cache" },
+  { path = '~/.aider.conf.yml', kind = "config" },
+]
 
 [[app]]
 name = "Cline"
@@ -57,7 +60,7 @@ category = "ai"
 detect.exe = ["cline"]
 paths = [ { path = '~/.cline', kind = "data" } ]
 
-# ============================== Shared caches ==============================
+# ============================== Shared folders ==============================
 
 [[shared]]
 name = "Hugging Face cache"
@@ -102,6 +105,15 @@ name = "User executables"
 path = '~/.local/bin'
 kind = "app"
 used_by = "command-line tools installed per user (pip, pipx, uv, Claude Code, ...); many shell profiles add it to PATH"
+
+[[shared]]
+name = "Java crash files"
+paths = [
+  { path = '~/hs_err_pid*.log', kind = "logs" },
+  { path = '~/replay_pid*.log', kind = "logs" },
+  { path = '~/java_pid*.hprof', kind = "dump" },
+]
+used_by = "any Java program that crashed while started from the home folder"
 
 # ============================== Development ==============================
 
@@ -201,6 +213,8 @@ paths = [
   { path = '~/.config/JetBrains', kind = "config" },
   { path = '~/.cache/JetBrains', kind = "cache" },
   { path = '~/.local/share/JetBrains', kind = "app" },
+  { path = '~/java_error_in_*.hprof', kind = "dump" },
+  { path = '~/java_error_in_*.log', kind = "logs" },
 ]
 
 [[app]]

@@ -158,6 +158,19 @@ voce `[[shared]]` "User executables"; .NET SDK aggiunto anche a linux/darwin.tom
 Test: `internal/scanner/pathcheck_test.go` (`CheckPath`, `Dictionary.Owner`). Sezione in fondo al report
 HTML, file `husk_path.csv`, elenco in console.
 
+Scansione dei file (0.1.1, `internal/scanner/files.go`, test in `files_test.go`):
+- le `paths` del dizionario possono indicare file con caratteri jolly (`Dictionary.ResolveFiles`); i file di
+  uno stesso schema sono **una riga** (`Result.Type = "files"`, `Path` = schema, `Files` = quanti);
+- nuovo stato `disposable` ("Disposable files (logs, crash dumps)") per `kind = "logs"` o `"dump"` (nuovo tipo
+  "Crash dump"): elencati anche se il programma è installato, senza le note della voce;
+- euristica sui file sciolti della cartella del profilo: `.log/.dmp/.mdmp/.hprof/.tmp` → disposable,
+  altri file ≥ 100 MB (`largeFile`) → orphan se vecchi, suspect se recenti; nomi uguali a meno delle cifre
+  raggruppati (`jcef_1234.log` → `jcef_*.log`); esclusi `platform.IsSystemFile` (ntuser.*, desktop.ini, ...);
+- voci: JetBrains (`jcef_*.log`, `java_error_in_*.hprof/.log`), `[[shared]]` "Java crash files"
+  (`hs_err_pid*.log`, `replay_pid*.log`, `java_pid*.hprof`), Aider (`.aider.conf.yml`);
+- sul PC dell'utente (17/09/2026): `java_error_in_phpstorm.hprof` 2,4 GB (PhpStorm, maggio 2025), 26
+  `jcef_*.log` vuoti, `.aider.conf.yml` orfano; `global.yml` vuoto non segnalato (origine ignota).
+
 Report HTML: filtri per stato, menu "Minimum size" (default "all", prima 100 MB: nascondeva i piccoli residui del dizionario), colonne ordinabili.
 In console: i primi 15 orfani per dimensione.
 
@@ -195,7 +208,8 @@ Output Go (richiesta dell'utente, 17/09/2026): ogni scansione crea `husk_<data>_
 se esiste già) dentro la cartella scelta (default: cartella temporanea di sistema, `report.DefaultDir()`) con
 `husk_report.html/csv` (CSV con virgola), `husk_programs.csv`, `husk_path.csv`, `husk_suggestions.toml`.
 La GUI sostituisce la vecchia preferenza `%TEMP%\husk` con il nuovo default. Il PoC usa ancora i nomi italiani (`husk_programmi_*`, `husk_suggerimenti_*`).
-Stati nella versione Go: `orphan`, `suspect`, `portable`, `shared`, `associated`, `ignored`
+Stati nella versione Go: `orphan`, `suspect`, `portable`, `shared` (etichetta "Shared folder", non più
+"Shared cache": le voci `[[shared]]` sono anche modelli e programmi, es. `.local\bin`), `associated`, `ignored`
 (nel PoC e più sotto in questo file: orfano, sospetto, portabile, condivisa, associato, ignorato).
 Ultimo report (17/09/2026, Go e PoC uguali): 59 probabili orfani (4,8 GB) e 19 cache condivise (4,5 GB);
 file di suggerimenti con 4 voci (le cartelle vuote di origine ignota).
@@ -221,6 +235,7 @@ revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
    (in locale annullare la modifica). Le API GitHub senza token hanno un limite di 60 richieste/ora:
    monitorare con intervalli lunghi. Da fare: provare i pacchetti su Linux e macOS reali; firma del
    codice (Windows SmartScreen, macOS Gatekeeper) non ancora presente.
-5. Supporto ai **residui come file singoli** (es. `%USERPROFILE%\.aider.conf.yml`, `.plist` su macOS).
+5. Residui come file: **fatto per la 0.1.1** (vedi "Scansione dei file"); mancano i `.plist` di macOS
+   (`~/Library/Preferences` contiene soprattutto file) e i file sciolti fuori dal profilo.
 6. Nuove fonti di programmi installati: winget, Scoop, Chocolatey.
 7. Dopo la prima release: tabella dei risultati dentro la GUI, eventuali grafici.

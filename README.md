@@ -2,7 +2,8 @@
 
 # Husk
 
-Finds the folders left behind by uninstalled programs. Report only: nothing is ever deleted.
+Finds the folders and files left behind by uninstalled programs, plus logs and crash dumps that
+can be deleted. Report only: nothing is ever deleted.
 Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne). Version 0.1.1.
 
 ![husk-gui](docs/images/husk-gui.png)
@@ -128,6 +129,9 @@ Report files (`--report`): each scan creates a `husk_<date>_<time>` folder insid
 ## Local configuration
 
 - `dictionary/{windows,linux,darwin}.toml`: built-in dictionary, embedded in the executables.
+  `paths` can list folders and files (wildcards allowed); files matching one pattern are reported as
+  one row, and `kind = "logs"` or `"dump"` files are listed as disposable even if the program is installed.
+  Loose `.log`, `.dmp`, `.hprof`, `.tmp` files and files over 100 MB in the profile folder are listed too.
 - `apps.user.toml`, `ignore.txt`: personal entries and exclusions, read from the executable folder and from
   `%APPDATA%\husk` (Windows), `~/.config/husk` (Linux), `~/Library/Application Support/husk` (macOS).
   Not tracked in the repository.

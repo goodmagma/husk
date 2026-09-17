@@ -124,7 +124,7 @@ func (u *ui) build() fyne.CanvasObject {
 	u.progress = widget.NewProgressBar()
 	u.progress.Hide()
 
-	u.summary = container.NewGridWithColumns(3)
+	u.summary = container.NewGridWithColumns(4)
 	u.actions = container.NewHBox()
 	u.log = widget.NewLabel("")
 	u.log.TextStyle = fyne.TextStyle{Monospace: true}
@@ -246,7 +246,7 @@ func (u *ui) startScan() {
 func (u *ui) showResults(rep *scanner.Report) {
 	u.phase.SetText(fmt.Sprintf("Scan completed in %.1f s.", rep.Duration.Seconds()))
 
-	for _, s := range []model.Status{model.Orphan, model.Suspect, model.Portable, model.Shared, model.Associated} {
+	for _, s := range []model.Status{model.Orphan, model.Disposable, model.Suspect, model.Portable, model.Shared, model.Associated} {
 		var size int64
 		n := 0
 		for _, r := range rep.Results {
@@ -291,6 +291,8 @@ func statusColor(s model.Status) color.Color {
 	switch s {
 	case model.Orphan:
 		return theme.Color(theme.ColorNameError)
+	case model.Disposable:
+		return color.NRGBA{R: 0x8e, G: 0x44, B: 0xad, A: 0xff}
 	case model.Suspect, model.Portable:
 		return theme.Color(theme.ColorNameWarning)
 	case model.Shared:

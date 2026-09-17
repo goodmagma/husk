@@ -65,6 +65,11 @@ func IsReparse(info fs.FileInfo) bool {
 
 func hideWindow(*exec.Cmd) {}
 
+// IsSystemFile reports system files in the home folder that must not be listed.
+func IsSystemFile(name string) bool {
+	return name == ".DS_Store" || name == ".localized" || name == ".CFUserTextEncoding"
+}
+
 // readUnixProcesses reads the full process paths with ps.
 func readUnixProcesses(args ...string) []model.Evidence {
 	seen := map[string]bool{}

@@ -24,7 +24,7 @@ func CheckPath(vars []platform.PathVar, results []model.Result,
 	owner func(path string) (Owner, bool)) []model.PathIssue {
 	orphans := map[string]model.Result{}
 	for _, r := range results {
-		if r.Status == model.Orphan {
+		if r.Status == model.Orphan && r.Type != model.TypeFiles {
 			orphans[pathutil.Key(r.Path)] = r
 		}
 	}

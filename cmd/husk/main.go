@@ -38,8 +38,8 @@ func run() int {
 	fs.IntVar(&opt.Days, "days", opt.Days, "days without changes before a folder is an orphan")
 	minMB := fs.Int64("min-mb", 0, "skip folders found by the heuristic below N MB (0: all)")
 	fs.BoolVar(&opt.All, "all", false, "include system folders")
-	show := fs.String("show", "orphan,suspect,portable,shared",
-		"statuses to list folder by folder: orphan, suspect, portable, shared, associated, ignored, or all")
+	show := fs.String("show", "orphan,disposable,suspect,portable,shared",
+		"statuses to list: orphan, disposable, suspect, portable, shared, associated, ignored, or all")
 	verbose := fs.Bool("v", false, "print the match and the notes of each folder")
 	writeReport := fs.Bool("report", false, "write the HTML/CSV report files and open the HTML page")
 	out := fs.String("out", report.DefaultDir(), "parent folder of the husk_<date>_<time> report folder (with --report)")

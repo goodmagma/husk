@@ -11,7 +11,7 @@
 #                   kind: app, config, cache, models, logs, data (user data: careful!)
 #   notes, clean    free notes and the suggested cleanup command
 #
-# [[shared]]   caches used by several programs: listed separately, never as orphans
+# [[shared]]   folders used by several programs (caches, models, tools): listed separately, never as orphans
 #
 # Paths accept %VARIABLES% and wildcards. Use single-quoted strings
 # so backslashes do not need to be doubled.
@@ -164,8 +164,11 @@ paths = [
 name = "Aider"
 category = "ai"
 detect.exe = ["aider"]
-paths = [ { path = '%USERPROFILE%\.aider', kind = "cache" } ]
-notes = "%USERPROFILE%\\.aider.conf.yml (may contain API keys) and .aider.* files in projects are left behind too."
+paths = [
+  { path = '%USERPROFILE%\.aider', kind = "cache" },
+  { path = '%USERPROFILE%\.aider.conf.yml', kind = "config" },
+]
+notes = ".aider.conf.yml may contain API keys; .aider.* files are also left in the projects."
 
 [[app]]
 name = "AiderDesk"
@@ -237,7 +240,7 @@ detect.exe = ["browser-use"]
 paths = [ { path = '%USERPROFILE%\.cache\browser_use', kind = "cache" } ]
 notes = "Python library: if you only tried it in a virtual environment, the folder is unused."
 
-# ============================== Shared caches ==============================
+# ============================== Shared folders ==============================
 
 [[shared]]
 name = "Datalab models (marker, surya)"
@@ -352,6 +355,15 @@ name = "User executables"
 path = '%USERPROFILE%\.local\bin'
 kind = "app"
 used_by = "command-line tools installed per user (uv, pipx, Claude Code, ...)"
+
+[[shared]]
+name = "Java crash files"
+paths = [
+  { path = '%USERPROFILE%\hs_err_pid*.log', kind = "logs" },
+  { path = '%USERPROFILE%\replay_pid*.log', kind = "logs" },
+  { path = '%USERPROFILE%\java_pid*.hprof', kind = "dump" },
+]
+used_by = "any Java program that crashed while started from the profile folder"
 
 # ============================== Development ==============================
 
@@ -585,6 +597,9 @@ detect.names = ["*JetBrains*", "IntelliJ*", "PyCharm*", "WebStorm*", "Rider*", "
 paths = [
   { path = '%APPDATA%\JetBrains', kind = "config" },
   { path = '%LOCALAPPDATA%\JetBrains', kind = "cache" },
+  { path = '%USERPROFILE%\jcef_*.log', kind = "logs" },
+  { path = '%USERPROFILE%\java_error_in_*.hprof', kind = "dump" },
+  { path = '%USERPROFILE%\java_error_in_*.log', kind = "logs" },
 ]
 notes = "Contains folders for every version: old ones can often be deleted."
 

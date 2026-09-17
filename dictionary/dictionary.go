@@ -43,7 +43,7 @@ type PathSpec struct {
 	Kind    string
 }
 
-// Entry is a dictionary entry: a program ([[app]]) or a shared cache ([[shared]]).
+// Entry is a dictionary entry: a program ([[app]]) or a folder shared by several programs ([[shared]]).
 type Entry struct {
 	Name     string
 	Origin   string
@@ -179,10 +179,12 @@ func parseEntry(m map[string]any, origin string, shared bool) (*Entry, error) {
 	var notes []string
 	for _, k := range []string{"used_by", "notes"} {
 		if s, _ := m[k].(string); s != "" {
-			notes = append(notes, s)
+			notes = append(notes, strings.TrimSuffix(s, "."))
 		}
 	}
-	e.Notes = strings.Join(notes, " ")
+	if len(notes) > 0 {
+		e.Notes = strings.Join(notes, ". ") + "."
+	}
 
 	if det, ok := m["detect"].(map[string]any); ok {
 		e.Names = strList(det["names"])
@@ -274,6 +276,41 @@ type Resolved struct {
 	Entry *Entry
 	Kind  string
 	Path  string
+}
+
+// FileGroup is a set of existing files matching one path pattern of an entry.
+type FileGroup struct {
+	Entry   *Entry
+	Kind    string
+	Pattern string // expanded pattern, e.g. C:\Users\me\jcef_*.log
+	Files   []string
+}
+
+// ResolveFiles returns the files (not folders) matched by the dictionary paths,
+// one group per pattern. A file matched by several patterns belongs to the first one.
+func (d *Dictionary) ResolveFiles() []FileGroup {
+	var out []FileGroup
+	seen := map[string]bool{}
+	for _, e := range d.List() {
+		for _, ps := range e.Paths {
+			pattern := pathutil.Expand(ps.Pattern)
+			matches, _ := filepath.Glob(pattern)
+			var files []string
+			for _, p := range matches {
+				st, err := os.Lstat(p)
+				k := pathutil.Key(p)
+				if err != nil || !st.Mode().IsRegular() || seen[k] {
+					continue
+				}
+				seen[k] = true
+				files = append(files, p)
+			}
+			if len(files) > 0 {
+				out = append(out, FileGroup{e, ps.Kind, pattern, files})
+			}
+		}
+	}
+	return out
 }
 
 // ResolvePaths returns the existing dictionary folders, keyed by path.

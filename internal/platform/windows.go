@@ -49,9 +49,9 @@ func Roots() []Root {
 		{Path: filepath.Join(local, "Programs"), Area: `AppData\Local\Programs`, ProgramArea: true},
 		{Path: filepath.Join(profile, "AppData", "LocalLow"), Area: `AppData\LocalLow`},
 		{Path: profile, Area: "Profile"},
-		{Path: filepath.Join(profile, ".cache"), Area: `Profilo\.cache`},
-		{Path: filepath.Join(profile, ".config"), Area: `Profilo\.config`},
-		{Path: filepath.Join(profile, ".local", "share"), Area: `Profilo\.local\share`},
+		{Path: filepath.Join(profile, ".cache"), Area: `Profile\.cache`},
+		{Path: filepath.Join(profile, ".config"), Area: `Profile\.config`},
+		{Path: filepath.Join(profile, ".local", "share"), Area: `Profile\.local\share`},
 	}
 }
 
@@ -79,6 +79,12 @@ var builtinIgnore = lowerSet(
 func IsSystemFolder(name, area string) bool {
 	n := strings.ToLower(name)
 	return builtinIgnore[n] || (strings.HasPrefix(area, "Program") && strings.HasPrefix(n, "windows"))
+}
+
+// IsSystemFile reports system files in the profile folder that must not be listed.
+func IsSystemFile(name string) bool {
+	n := strings.ToLower(name)
+	return strings.HasPrefix(n, "ntuser.") || n == "desktop.ini" || n == "thumbs.db"
 }
 
 // Sources returns the sources of installed programs.

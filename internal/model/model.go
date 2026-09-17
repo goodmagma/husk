@@ -19,6 +19,7 @@ type Status string
 
 const (
 	Orphan     Status = "orphan"
+	Disposable Status = "disposable"
 	Suspect    Status = "suspect"
 	Portable   Status = "portable"
 	Shared     Status = "shared"
@@ -27,14 +28,15 @@ const (
 )
 
 // StatusOrder is the display order of the statuses.
-var StatusOrder = []Status{Orphan, Suspect, Portable, Shared, Associated, Ignored}
+var StatusOrder = []Status{Orphan, Disposable, Suspect, Portable, Shared, Associated, Ignored}
 
 // StatusLabel describes the statuses in reports and user interfaces.
 var StatusLabel = map[Status]string{
 	Orphan:     "Likely orphan",
+	Disposable: "Disposable files",
 	Suspect:    "No program, but recently used",
 	Portable:   "Possible portable program",
-	Shared:     "Shared cache",
+	Shared:     "Shared folder",
 	Associated: "Belongs to a program",
 	Ignored:    "System / ignored",
 }
@@ -42,9 +44,10 @@ var StatusLabel = map[Status]string{
 // StatusTitle is the plural heading of each status in lists.
 var StatusTitle = map[Status]string{
 	Orphan:     "Likely orphans",
+	Disposable: "Disposable files (logs, crash dumps)",
 	Suspect:    "No program, but recently used",
 	Portable:   "Possible portable programs",
-	Shared:     "Shared caches",
+	Shared:     "Shared folders",
 	Associated: "Folders that belong to a program",
 	Ignored:    "System / ignored folders",
 }
@@ -57,7 +60,17 @@ var KindLabel = map[string]string{
 	"data":   "User data (!)",
 	"app":    "Program",
 	"logs":   "Logs",
+	"dump":   "Crash dump",
 }
+
+// DisposableKinds are the kinds of files that can be deleted even if their program is installed.
+var DisposableKinds = map[string]bool{"logs": true, "dump": true}
+
+// What a result row describes.
+const (
+	TypeFolder = "folder"
+	TypeFiles  = "files" // one file or a group of files matching a pattern
+)
 
 // How a folder was classified.
 const (
@@ -65,8 +78,10 @@ const (
 	SourceHeuristic  = "heuristic"
 )
 
-// Result is a scanned folder.
+// Result is a scanned folder, or a file or group of files (Type == TypeFiles,
+// Path is then the file or a pattern such as C:\Users\me\jcef_*.log).
 type Result struct {
+	Type      string
 	Path      string
 	Area      string
 	Size      int64

@@ -167,6 +167,11 @@ func HTML(rep *scanner.Report, version string) string {
 		if r.Kind == "data" {
 			kindHTML = `<span class="warn">` + kindHTML + `</span>`
 		}
+		link, pathNote := r.Path, e(r.Area)
+		if r.Type == model.TypeFiles {
+			link = filepath.Dir(r.Path)
+			pathNote += " · " + fileCount(r.Files)
+		}
 		details := e(r.Match)
 		if r.Details != "" {
 			details += `<div class="small">` + e(r.Details) + `</div>`
@@ -178,7 +183,7 @@ func HTML(rep *scanner.Report, version string) string {
 			`<td data-v="%d">%s</td><td>%s</td></tr>`+"\n",
 			r.Status, r.Size, r.Status, e(model.StatusLabel[r.Status]),
 			r.Source, e(r.Source), kindHTML,
-			e(FileURL(r.Path)), e(r.Path), e(r.Area),
+			e(FileURL(link)), e(r.Path), pathNote,
 			r.Size, FmtSize(r.Size), r.Files, FmtInt(r.Files),
 			r.LastWrite, FmtDate(r.LastWrite), details)
 	}
@@ -213,6 +218,13 @@ func pathSection(issues []model.PathIssue) string {
 		`<th>Entry</th><th>Details</th></tr></thead><tbody>` + rows.String() + `</tbody></table></div>`
 }
 
+func fileCount(n int64) string {
+	if n == 1 {
+		return "1 file"
+	}
+	return FmtInt(n) + " files"
+}
+
 // FileURL converts a local path into a file:// URL.
 func FileURL(p string) string {
 	p = filepath.ToSlash(p)
@@ -240,7 +252,7 @@ func writeCSV(file string, rows [][]string) error {
 }
 
 func resultRows(results []model.Result) [][]string {
-	rows := [][]string{{"Status", "Source", "Content", "Area", "Path", "Bytes", "Size", "Files",
+	rows := [][]string{{"Status", "Type", "Source", "Content", "Area", "Path", "Bytes", "Size", "Files",
 		"LastModified", "Match", "Details"}}
 	for _, r := range results {
 		kind := model.KindLabel[r.Kind]
@@ -251,7 +263,7 @@ func resultRows(results []model.Result) [][]string {
 		if r.LastWrite != 0 {
 			last = time.Unix(r.LastWrite, 0).Format("2006-01-02 15:04")
 		}
-		rows = append(rows, []string{model.StatusLabel[r.Status], r.Source, kind, r.Area, r.Path,
+		rows = append(rows, []string{model.StatusLabel[r.Status], r.Type, r.Source, kind, r.Area, r.Path,
 			fmt.Sprint(r.Size), FmtSize(r.Size), fmt.Sprint(r.Files), last, r.Match, r.Details})
 	}
 	return rows
@@ -302,7 +314,7 @@ func Suggestions(results []model.Result) (string, int) {
 	b.WriteString("# Check which program they belong to, fill in the fields and uncomment.\n\n")
 	n := 0
 	for _, r := range results {
-		if r.Source != model.SourceHeuristic ||
+		if r.Source != model.SourceHeuristic || r.Type == model.TypeFiles ||
 			(r.Status != model.Orphan && r.Status != model.Suspect && r.Status != model.Portable) {
 			continue
 		}

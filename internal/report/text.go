@@ -12,7 +12,7 @@ import (
 )
 
 // DefaultStatuses are the statuses listed by default in the text report.
-var DefaultStatuses = []model.Status{model.Orphan, model.Suspect, model.Portable, model.Shared}
+var DefaultStatuses = []model.Status{model.Orphan, model.Disposable, model.Suspect, model.Portable, model.Shared}
 
 // DefaultDir is the default parent folder for report files: the system temporary folder.
 // Each scan writes its files in a husk_<date>_<time> subfolder.
@@ -95,14 +95,18 @@ func WriteText(w io.Writer, rep *scanner.Report, opt TextOptions) {
 		if len(items) == 0 || (!listed[s] && s == model.Ignored) {
 			continue
 		}
-		fmt.Fprintf(w, "\n%s: %d folders, %s\n", model.StatusTitle[s], len(items), FmtSize(size))
+		fmt.Fprintf(w, "\n%s: %s, %s\n", model.StatusTitle[s], countItems(items), FmtSize(size))
 		if !listed[s] {
 			continue
 		}
 		const row = "  %10s  %-10s  %-10s  %s\n"
 		fmt.Fprintf(w, row, "SIZE", "MODIFIED", "SOURCE", "PATH")
 		for _, r := range items {
-			fmt.Fprintf(w, row, FmtSize(r.Size), FmtDate(r.LastWrite), r.Source, r.Path)
+			p := r.Path
+			if r.Type == model.TypeFiles && r.Files > 1 {
+				p += " (" + fileCount(r.Files) + ")"
+			}
+			fmt.Fprintf(w, row, FmtSize(r.Size), FmtDate(r.LastWrite), r.Source, p)
 			if opt.Verbose {
 				for _, line := range []string{r.Match, r.Details} {
 					if line != "" {
@@ -121,7 +125,33 @@ func WriteText(w io.Writer, rep *scanner.Report, opt TextOptions) {
 		}
 	}
 
-	fmt.Fprintf(w, "\nScanned %d folders in %.1fs\n", len(rep.Results), rep.Duration.Seconds())
+	fmt.Fprintf(w, "\nScanned %s in %.1fs\n", countItems(rep.Results), rep.Duration.Seconds())
+}
+
+// countItems describes a list of results, e.g. "12 folders", "3 file groups", "5 folders, 1 file group".
+func countItems(items []model.Result) string {
+	folders, groups := 0, 0
+	for _, r := range items {
+		if r.Type == model.TypeFiles {
+			groups++
+		} else {
+			folders++
+		}
+	}
+	plural := func(n int, one, many string) string {
+		if n == 1 {
+			return "1 " + one
+		}
+		return fmt.Sprintf("%d %s", n, many)
+	}
+	var parts []string
+	if folders > 0 || groups == 0 {
+		parts = append(parts, plural(folders, "folder", "folders"))
+	}
+	if groups > 0 {
+		parts = append(parts, plural(groups, "file group", "file groups"))
+	}
+	return strings.Join(parts, ", ")
 }
 
 // WriteFileList prints the paths of the report files.

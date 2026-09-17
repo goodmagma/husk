@@ -5,16 +5,16 @@
 <title>Husk – Leftover folders</title>
 <style>
 :root { --bg:#f7f7f5; --fg:#1d1d1b; --muted:#6b6b66; --card:#fff; --line:#e3e3de;
-        --orphan:#c0392b; --suspect:#b9770e; --shared:#2e6da4; --associated:#1e8449; --ignored:#7f8c8d; }
+        --orphan:#c0392b; --disposable:#8e44ad; --suspect:#b9770e; --shared:#2e6da4; --associated:#1e8449; --ignored:#7f8c8d; }
 @media (prefers-color-scheme: dark) {
   :root { --bg:#161615; --fg:#ecece8; --muted:#9a9a94; --card:#20201f; --line:#33332f;
-          --orphan:#ec7063; --suspect:#f5b041; --shared:#6fa8dc; --associated:#58d68d; --ignored:#aab7b8; } }
+          --orphan:#ec7063; --disposable:#bb8fce; --suspect:#f5b041; --shared:#6fa8dc; --associated:#58d68d; --ignored:#aab7b8; } }
 body { margin:0; padding:24px; background:var(--bg); color:var(--fg); font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
 h1 { margin:0 0 4px; font-size:22px; } .sub { color:var(--muted); margin-bottom:20px; }
 .cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
 .card { background:var(--card); border:1px solid var(--line); border-left:4px solid; border-radius:8px; padding:10px 14px; min-width:180px; }
 .card .n { font-size:20px; font-weight:600; }
-.card.orphan { border-left-color:var(--orphan); } .card.suspect, .card.portable { border-left-color:var(--suspect); }
+.card.orphan { border-left-color:var(--orphan); } .card.disposable { border-left-color:var(--disposable); } .card.suspect, .card.portable { border-left-color:var(--suspect); }
 .card.shared { border-left-color:var(--shared); }
 .card.associated { border-left-color:var(--associated); } .card.ignored { border-left-color:var(--ignored); }
 .filters { margin:12px 0; display:flex; gap:16px; flex-wrap:wrap; }
@@ -26,7 +26,7 @@ th { cursor:pointer; user-select:none; position:sticky; top:0; background:var(--
 .small { color:var(--muted); font-size:12px; }
 a { color:inherit; }
 .tag { display:inline-block; padding:1px 8px; border-radius:10px; border:1px solid; font-size:12px; white-space:nowrap; }
-.tag.orphan { color:var(--orphan); } .tag.suspect, .tag.portable { color:var(--suspect); } .tag.shared { color:var(--shared); }
+.tag.orphan { color:var(--orphan); } .tag.disposable { color:var(--disposable); } .tag.suspect, .tag.portable { color:var(--suspect); } .tag.shared { color:var(--shared); }
 .tag.associated { color:var(--associated); } .tag.ignored { color:var(--ignored); }
 .src-dictionary { font-weight:600; }
 .warn { color:var(--orphan); }
@@ -39,9 +39,10 @@ h2 { margin:28px 0 4px; font-size:17px; }
 <div class="cards">__CARDS__</div>
 <div class="filters">
   <label><input type="checkbox" class="flt" value="orphan" checked> Likely orphans</label>
+  <label><input type="checkbox" class="flt" value="disposable" checked> Disposable files</label>
   <label><input type="checkbox" class="flt" value="suspect" checked> Recently used</label>
   <label><input type="checkbox" class="flt" value="portable" checked> Portable</label>
-  <label><input type="checkbox" class="flt" value="shared" checked> Shared caches</label>
+  <label><input type="checkbox" class="flt" value="shared" checked> Shared folders</label>
   <label><input type="checkbox" class="flt" value="associated"> Associated</label>
   <label><input type="checkbox" class="flt" value="ignored"> System</label>
   <label>Minimum size
