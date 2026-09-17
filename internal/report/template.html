@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Husk __VERSION__">
+<title>Husk – Leftover folders</title>
+<style>
+:root { --bg:#f7f7f5; --fg:#1d1d1b; --muted:#6b6b66; --card:#fff; --line:#e3e3de;
+        --orphan:#c0392b; --suspect:#b9770e; --shared:#2e6da4; --associated:#1e8449; --ignored:#7f8c8d; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#161615; --fg:#ecece8; --muted:#9a9a94; --card:#20201f; --line:#33332f;
+          --orphan:#ec7063; --suspect:#f5b041; --shared:#6fa8dc; --associated:#58d68d; --ignored:#aab7b8; } }
+body { margin:0; padding:24px; background:var(--bg); color:var(--fg); font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
+h1 { margin:0 0 4px; font-size:22px; } .sub { color:var(--muted); margin-bottom:20px; }
+.cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.card { background:var(--card); border:1px solid var(--line); border-left:4px solid; border-radius:8px; padding:10px 14px; min-width:180px; }
+.card .n { font-size:20px; font-weight:600; }
+.card.orphan { border-left-color:var(--orphan); } .card.suspect, .card.portable { border-left-color:var(--suspect); }
+.card.shared { border-left-color:var(--shared); }
+.card.associated { border-left-color:var(--associated); } .card.ignored { border-left-color:var(--ignored); }
+.filters { margin:12px 0; display:flex; gap:16px; flex-wrap:wrap; }
+.wrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+table { border-collapse:collapse; width:100%; }
+th, td { padding:7px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+th { cursor:pointer; user-select:none; position:sticky; top:0; background:var(--card); }
+.num { text-align:right; white-space:nowrap; } .path { word-break:break-all; }
+.small { color:var(--muted); font-size:12px; }
+a { color:inherit; }
+.tag { display:inline-block; padding:1px 8px; border-radius:10px; border:1px solid; font-size:12px; white-space:nowrap; }
+.tag.orphan { color:var(--orphan); } .tag.suspect, .tag.portable { color:var(--suspect); } .tag.shared { color:var(--shared); }
+.tag.associated { color:var(--associated); } .tag.ignored { color:var(--ignored); }
+.src-dictionary { font-weight:600; }
+.warn { color:var(--orphan); }
+.note { color:var(--muted); margin-top:16px; font-size:13px; }
+h2 { margin:28px 0 4px; font-size:17px; }
+#paths th { cursor:default; }
+</style></head><body>
+<h1>Husk – Leftover folders</h1>
+<div class="sub">__SUBTITLE__</div>
+<div class="cards">__CARDS__</div>
+<div class="filters">
+  <label><input type="checkbox" class="flt" value="orphan" checked> Likely orphans</label>
+  <label><input type="checkbox" class="flt" value="suspect" checked> Recently used</label>
+  <label><input type="checkbox" class="flt" value="portable" checked> Portable</label>
+  <label><input type="checkbox" class="flt" value="shared" checked> Shared caches</label>
+  <label><input type="checkbox" class="flt" value="associated"> Associated</label>
+  <label><input type="checkbox" class="flt" value="ignored"> System</label>
+  <label>Minimum size
+    <select id="minsize">
+      <option value="0">all</option>
+      <option value="1048576">1 MB</option>
+      <option value="10485760">10 MB</option>
+      <option value="104857600" selected>100 MB</option>
+      <option value="1073741824">1 GB</option>
+    </select></label>
+</div>
+<div class="wrap"><table id="main">
+<thead><tr><th>Status</th><th>Source</th><th>Content</th><th>Path</th><th>Size</th><th>Files</th><th>Last modified</th><th>Details</th></tr></thead>
+<tbody>__ROWS__</tbody>
+</table></div>
+__PATHS__
+<p class="note">Source "dictionary" = folder known to the built-in or user dictionary (reliable); "heuristic" = guessed from the name (to be checked).
+Always check before deleting, especially folders whose content is "User data".</p>
+<script>
+const boxes = document.querySelectorAll('.flt');
+const minsize = document.getElementById('minsize');
+function apply() {
+  const on = new Set([...boxes].filter(b => b.checked).map(b => b.value));
+  const min = Number(minsize.value);
+  document.querySelectorAll('#main tbody tr').forEach(r =>
+    r.style.display = on.has(r.dataset.s) && Number(r.dataset.b) >= min ? '' : 'none');
+}
+boxes.forEach(b => b.addEventListener('change', apply));
+minsize.addEventListener('change', apply); apply();
+document.querySelectorAll('#main th').forEach((th, i) => th.addEventListener('click', () => {
+  const tb = document.querySelector('#main tbody'), rows = [...tb.rows];
+  const asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+  const val = c => c.dataset.v ?? c.textContent;
+  rows.sort((a, b) => {
+    const x = val(a.cells[i]), y = val(b.cells[i]), nx = Number(x), ny = Number(y);
+    const c = (!isNaN(nx) && !isNaN(ny)) ? nx - ny : x.localeCompare(y);
+    return asc ? c : -c;
+  });
+  rows.forEach(r => tb.appendChild(r));
+}));
+</script>
+</body></html>

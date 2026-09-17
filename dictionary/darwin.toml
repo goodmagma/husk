@@ -1,0 +1,310 @@
+# Husk dictionary of known programs (macOS)
+#
+# Same format as windows.toml (see the header of that file).
+# Paths accept ~, $VARIABLES, ${VARIABLES} and wildcards.
+# detect.names is matched against the apps in /Applications and ~/Applications
+# (name and bundle identifier), pkgutil packages and Homebrew.
+
+# ============================== AI ==============================
+
+[[app]]
+name = "Ollama"
+category = "ai"
+detect.names = ["Ollama*", "com.electron.ollama*"]
+detect.exe = ["ollama"]
+paths = [
+  { path = '~/.ollama', kind = "models" },
+  { path = '~/Library/Application Support/Ollama', kind = "config" },
+]
+
+[[app]]
+name = "LM Studio"
+category = "ai"
+detect.names = ["LM Studio*", "ai.elementlabs.lmstudio*"]
+detect.exe = ["lms"]
+paths = [
+  { path = '~/.lmstudio', kind = "models" },
+  { path = '~/.cache/lm-studio', kind = "models" },
+  { path = '~/Library/Application Support/LM Studio', kind = "config" },
+]
+
+[[app]]
+name = "Cursor"
+category = "ai"
+detect.names = ["Cursor*"]
+detect.exe = ["cursor"]
+paths = [
+  { path = '~/.cursor', kind = "config" },
+  { path = '~/Library/Application Support/Cursor', kind = "config" },
+]
+
+[[app]]
+name = "Claude Desktop"
+category = "ai"
+detect.names = ["Claude", "com.anthropic.claudefordesktop*"]
+paths = [ { path = '~/Library/Application Support/Claude', kind = "config" } ]
+
+[[app]]
+name = "Claude Code"
+category = "ai"
+detect.exe = ["claude"]
+paths = [
+  { path = '~/.claude', kind = "config" },
+  { path = '~/.local/share/claude', kind = "app" },
+]
+
+[[app]]
+name = "Aider"
+category = "ai"
+detect.exe = ["aider"]
+paths = [ { path = '~/.aider', kind = "cache" } ]
+
+# ============================== Shared caches ==============================
+
+[[shared]]
+name = "Hugging Face cache"
+path = '~/.cache/huggingface'
+kind = "models"
+used_by = "Python libraries (transformers, diffusers), ComfyUI, WebUI and others"
+clean = "huggingface-cli delete-cache"
+
+[[shared]]
+name = "PyTorch Hub cache"
+path = '~/.cache/torch'
+kind = "models"
+used_by = "PyTorch and programs based on it"
+
+[[shared]]
+name = "Python library caches"
+paths = [
+  { path = '~/Library/Caches/pip', kind = "cache" },
+  { path = '~/.matplotlib', kind = "cache" },
+  { path = '~/nltk_data', kind = "models" },
+]
+used_by = "pip, Matplotlib, NLTK"
+
+[[shared]]
+name = "Fyne app data"
+paths = [
+  { path = '~/Library/Preferences/fyne', kind = "config" },
+  { path = '~/Library/Caches/fyne', kind = "cache" },
+]
+used_by = "programs built with the Fyne toolkit (Husk included): one subfolder per application ID"
+
+# ============================== Development ==============================
+
+[[app]]
+name = "Node.js"
+category = "development"
+detect.names = ["node", "org.nodejs.*"]
+detect.exe = ["node"]
+paths = [
+  { path = '~/.npm', kind = "cache" },
+  { path = '~/.nvm', kind = "app" },
+  { path = '~/Library/Caches/node-gyp', kind = "cache" },
+]
+clean = "npm cache clean --force"
+
+[[app]]
+name = "Bun"
+category = "development"
+detect.exe = ["bun"]
+paths = [ { path = '~/.bun', kind = "app" } ]
+
+[[app]]
+name = "Rust"
+category = "development"
+detect.names = ["rust*", "rustup*"]
+detect.exe = ["cargo", "rustup", "rustc"]
+paths = [
+  { path = '~/.cargo', kind = "app" },
+  { path = '~/.rustup', kind = "app" },
+]
+
+[[app]]
+name = "Go"
+category = "development"
+detect.names = ["go", "org.golang.go*"]
+detect.exe = ["go"]
+paths = [
+  { path = '~/go', kind = "data" },
+  { path = '~/Library/Caches/go-build', kind = "cache" },
+]
+clean = "go clean -cache -modcache"
+
+[[app]]
+name = "uv"
+category = "development"
+detect.exe = ["uv"]
+paths = [
+  { path = '~/.cache/uv', kind = "cache" },
+  { path = '~/.local/share/uv', kind = "app" },
+]
+clean = "uv cache clean"
+
+[[app]]
+name = "Java / Gradle / Maven"
+category = "development"
+detect.names = ["*jdk*", "gradle", "maven"]
+detect.exe = ["java", "gradle", "mvn"]
+paths = [
+  { path = '~/.gradle', kind = "cache" },
+  { path = '~/.m2', kind = "cache" },
+]
+
+[[app]]
+name = "Docker Desktop"
+category = "development"
+detect.names = ["Docker*", "com.docker.docker*"]
+detect.exe = ["docker"]
+paths = [
+  { path = '~/.docker', kind = "config" },
+  { path = '~/Library/Containers/com.docker.docker', kind = "data" },
+  { path = '~/Library/Group Containers/group.com.docker', kind = "data" },
+]
+notes = "Containers/com.docker.docker contains the disk with images and volumes."
+
+[[app]]
+name = "Visual Studio Code"
+category = "development"
+detect.names = ["Visual Studio Code*", "com.microsoft.VSCode*", "visual-studio-code"]
+detect.exe = ["code"]
+paths = [
+  { path = '~/.vscode', kind = "config" },
+  { path = '~/Library/Application Support/Code', kind = "config" },
+  { path = '~/Library/Caches/com.microsoft.VSCode*', kind = "cache" },
+]
+
+[[app]]
+name = "JetBrains IDE"
+category = "development"
+detect.names = ["*JetBrains*", "IntelliJ*", "PyCharm*", "WebStorm*", "PhpStorm*", "GoLand*", "CLion*", "Rider*", "com.jetbrains.*"]
+paths = [
+  { path = '~/Library/Application Support/JetBrains', kind = "config" },
+  { path = '~/Library/Caches/JetBrains', kind = "cache" },
+  { path = '~/Library/Logs/JetBrains', kind = "logs" },
+]
+
+[[app]]
+name = "Xcode"
+category = "development"
+detect.names = ["Xcode*", "com.apple.dt.Xcode*"]
+paths = [
+  { path = '~/Library/Developer/Xcode', kind = "cache" },
+  { path = '~/Library/Developer/CoreSimulator', kind = "data" },
+]
+notes = "DerivedData and simulators can take tens of GB."
+
+# ============================== Browsers and communication ==============================
+
+[[app]]
+name = "Google Chrome"
+category = "browser"
+detect.names = ["Google Chrome*", "com.google.Chrome*"]
+paths = [
+  { path = '~/Library/Application Support/Google/Chrome', kind = "data" },
+  { path = '~/Library/Caches/Google/Chrome', kind = "cache" },
+]
+
+[[app]]
+name = "Mozilla Firefox / Thunderbird"
+category = "browser"
+detect.names = ["Firefox*", "Thunderbird*", "org.mozilla.*"]
+paths = [
+  { path = '~/Library/Application Support/Firefox', kind = "data" },
+  { path = '~/Library/Application Support/Thunderbird', kind = "data" },
+  { path = '~/Library/Caches/Firefox', kind = "cache" },
+]
+
+[[app]]
+name = "Discord"
+category = "communication"
+detect.names = ["Discord*", "com.hnc.Discord*"]
+paths = [ { path = '~/Library/Application Support/discord', kind = "cache" } ]
+
+[[app]]
+name = "Slack"
+category = "communication"
+detect.names = ["Slack*", "com.tinyspeck.slackmacgap*"]
+paths = [
+  { path = '~/Library/Application Support/Slack', kind = "cache" },
+  { path = '~/Library/Containers/com.tinyspeck.slackmacgap', kind = "cache" },
+]
+
+[[app]]
+name = "Zoom"
+category = "communication"
+detect.names = ["zoom.us*", "us.zoom.*"]
+paths = [
+  { path = '~/Library/Application Support/zoom.us', kind = "config" },
+  { path = '~/Library/Caches/us.zoom.xos', kind = "cache" },
+]
+
+[[app]]
+name = "Telegram"
+category = "communication"
+detect.names = ["Telegram*", "ru.keepcoder.Telegram*", "org.telegram.*"]
+paths = [ { path = '~/Library/Application Support/Telegram Desktop', kind = "data" } ]
+
+# ============================== Multimedia and games ==============================
+
+[[app]]
+name = "Spotify"
+category = "multimedia"
+detect.names = ["Spotify*", "com.spotify.client*"]
+paths = [
+  { path = '~/Library/Application Support/Spotify', kind = "config" },
+  { path = '~/Library/Caches/com.spotify.client', kind = "cache" },
+]
+
+[[app]]
+name = "Steam"
+category = "games"
+detect.names = ["Steam*", "com.valvesoftware.steam*"]
+paths = [ { path = '~/Library/Application Support/Steam', kind = "data" } ]
+notes = "Contains installed games and local saves."
+
+[[app]]
+name = "OBS Studio"
+category = "multimedia"
+detect.names = ["OBS*", "com.obsproject.*"]
+paths = [ { path = '~/Library/Application Support/obs-studio', kind = "config" } ]
+
+[[app]]
+name = "Adobe"
+category = "multimedia"
+detect.names = ["Adobe *", "com.adobe.*"]
+paths = [
+  { path = '~/Library/Application Support/Adobe', kind = "config" },
+  { path = '~/Library/Caches/Adobe', kind = "cache" },
+  { path = '/Library/Application Support/Adobe', kind = "app" },
+]
+
+# ============================== Utilities ==============================
+
+[[app]]
+name = "Syncthing"
+category = "utilities"
+detect.names = ["Syncthing*", "com.github.xor-gate.syncthing*", "syncthing"]
+detect.exe = ["syncthing"]
+paths = [
+  { path = '~/Library/Application Support/Syncthing', kind = "data" },
+  { path = '~/Sync', kind = "data" },
+]
+notes = "Sync is the default synchronized folder: it may contain your files."
+
+[[app]]
+name = "Obsidian"
+category = "utilities"
+detect.names = ["Obsidian*", "md.obsidian*"]
+paths = [ { path = '~/Library/Application Support/obsidian', kind = "config" } ]
+notes = "Notes (vaults) are in a folder chosen by the user, not here."
+
+[[app]]
+name = "Dropbox"
+category = "utilities"
+detect.names = ["Dropbox*", "com.getdropbox.dropbox*"]
+paths = [
+  { path = '~/.dropbox', kind = "app" },
+  { path = '~/Library/Application Support/Dropbox', kind = "app" },
+]

@@ -1,0 +1,8 @@
+[Details]
+Name = "Husk"
+ID = "io.github.goodmagma.husk"
+Version = "0.1.0"
+Build = 1
+
+[Release]
+BuildName = "husk-gui"

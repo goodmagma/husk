@@ -1,0 +1,337 @@
+# Husk dictionary of known programs (Linux)
+#
+# Same format as windows.toml (see the header of that file).
+# Paths accept ~, $VARIABLES, ${VARIABLES} and wildcards.
+# detect.names is matched against packages (dpkg, rpm, pacman, Flatpak, Snap)
+# and against menu application names (.desktop files).
+
+# ============================== AI ==============================
+
+[[app]]
+name = "Ollama"
+category = "ai"
+detect.names = ["ollama*"]
+detect.exe = ["ollama"]
+paths = [ { path = '~/.ollama', kind = "models" } ]
+notes = "The system service keeps its models in /usr/share/ollama."
+
+[[app]]
+name = "LM Studio"
+category = "ai"
+detect.names = ["LM Studio*", "lm-studio*"]
+detect.exe = ["lms"]
+paths = [
+  { path = '~/.lmstudio', kind = "models" },
+  { path = '~/.cache/lm-studio', kind = "models" },
+  { path = '~/.config/LM Studio', kind = "config" },
+]
+
+[[app]]
+name = "Cursor"
+category = "ai"
+detect.names = ["Cursor*"]
+detect.exe = ["cursor"]
+paths = [
+  { path = '~/.cursor', kind = "config" },
+  { path = '~/.config/Cursor', kind = "config" },
+]
+
+[[app]]
+name = "Claude Code"
+category = "ai"
+detect.exe = ["claude"]
+paths = [
+  { path = '~/.claude', kind = "config" },
+  { path = '~/.local/share/claude', kind = "app" },
+]
+
+[[app]]
+name = "Aider"
+category = "ai"
+detect.exe = ["aider"]
+paths = [ { path = '~/.aider', kind = "cache" } ]
+
+[[app]]
+name = "Cline"
+category = "ai"
+detect.exe = ["cline"]
+paths = [ { path = '~/.cline', kind = "data" } ]
+
+# ============================== Shared caches ==============================
+
+[[shared]]
+name = "Hugging Face cache"
+path = '~/.cache/huggingface'
+kind = "models"
+used_by = "Python libraries (transformers, diffusers), ComfyUI, WebUI and others"
+clean = "huggingface-cli delete-cache"
+
+[[shared]]
+name = "PyTorch Hub cache"
+path = '~/.cache/torch'
+kind = "models"
+used_by = "PyTorch and programs based on it"
+
+[[shared]]
+name = "Python library caches"
+paths = [
+  { path = '~/.cache/pip', kind = "cache" },
+  { path = '~/.matplotlib', kind = "cache" },
+  { path = '~/.cache/matplotlib', kind = "cache" },
+  { path = '~/.triton', kind = "cache" },
+  { path = '~/nltk_data', kind = "models" },
+]
+used_by = "pip, Matplotlib, Triton (PyTorch), NLTK"
+
+[[shared]]
+name = "Thumbnail cache"
+path = '~/.cache/thumbnails'
+kind = "cache"
+used_by = "file managers and image viewers"
+
+[[shared]]
+name = "Fyne app data"
+paths = [
+  { path = '~/.config/fyne', kind = "config" },
+  { path = '~/.cache/fyne', kind = "cache" },
+]
+used_by = "programs built with the Fyne toolkit (Husk included): one subfolder per application ID"
+
+# ============================== Development ==============================
+
+[[app]]
+name = "Node.js"
+category = "development"
+detect.names = ["nodejs*", "node"]
+detect.exe = ["node"]
+paths = [
+  { path = '~/.npm', kind = "cache" },
+  { path = '~/.node-gyp', kind = "cache" },
+  { path = '~/.cache/node-gyp', kind = "cache" },
+  { path = '~/.nvm', kind = "app" },
+]
+clean = "npm cache clean --force"
+
+[[app]]
+name = "Bun"
+category = "development"
+detect.exe = ["bun"]
+paths = [ { path = '~/.bun', kind = "app" } ]
+
+[[app]]
+name = "Rust"
+category = "development"
+detect.names = ["rust*", "cargo*"]
+detect.exe = ["cargo", "rustup", "rustc"]
+paths = [
+  { path = '~/.cargo', kind = "app" },
+  { path = '~/.rustup', kind = "app" },
+]
+
+[[app]]
+name = "Go"
+category = "development"
+detect.names = ["golang*"]
+detect.exe = ["go"]
+paths = [
+  { path = '~/go', kind = "data" },
+  { path = '~/.cache/go-build', kind = "cache" },
+]
+clean = "go clean -cache -modcache"
+
+[[app]]
+name = "uv"
+category = "development"
+detect.exe = ["uv"]
+paths = [
+  { path = '~/.cache/uv', kind = "cache" },
+  { path = '~/.local/share/uv', kind = "app" },
+]
+clean = "uv cache clean"
+
+[[app]]
+name = "Java / Gradle / Maven"
+category = "development"
+detect.names = ["*jdk*", "*openjdk*", "gradle*", "maven*"]
+detect.exe = ["java", "gradle", "mvn"]
+paths = [
+  { path = '~/.gradle', kind = "cache" },
+  { path = '~/.m2', kind = "cache" },
+]
+
+[[app]]
+name = "Docker"
+category = "development"
+detect.names = ["docker*", "Docker Desktop*"]
+detect.exe = ["docker"]
+paths = [ { path = '~/.docker', kind = "config" } ]
+
+[[app]]
+name = "Visual Studio Code"
+category = "development"
+detect.names = ["code", "code-oss", "Visual Studio Code*", "com.visualstudio.code*"]
+detect.exe = ["code"]
+paths = [
+  { path = '~/.vscode', kind = "config" },
+  { path = '~/.config/Code', kind = "config" },
+]
+
+[[app]]
+name = "JetBrains IDE"
+category = "development"
+detect.names = ["*jetbrains*", "intellij*", "pycharm*", "webstorm*", "phpstorm*", "goland*", "clion*", "rider*"]
+paths = [
+  { path = '~/.config/JetBrains', kind = "config" },
+  { path = '~/.cache/JetBrains', kind = "cache" },
+  { path = '~/.local/share/JetBrains', kind = "app" },
+]
+
+[[app]]
+name = "Eclipse IDE"
+category = "development"
+detect.names = ["eclipse*", "org.eclipse.*"]
+detect.exe = ["eclipse"]
+paths = [
+  { path = '~/.eclipse', kind = "config" },
+  { path = '~/.p2', kind = "cache" },
+]
+
+# ============================== Browsers and communication ==============================
+
+[[app]]
+name = "Google Chrome"
+category = "browser"
+detect.names = ["google-chrome*", "Google Chrome*", "com.google.Chrome*"]
+detect.exe = ["google-chrome", "google-chrome-stable"]
+paths = [
+  { path = '~/.config/google-chrome', kind = "data" },
+  { path = '~/.cache/google-chrome', kind = "cache" },
+]
+
+[[app]]
+name = "Chromium"
+category = "browser"
+detect.names = ["chromium*", "org.chromium.*"]
+detect.exe = ["chromium", "chromium-browser"]
+paths = [
+  { path = '~/.config/chromium', kind = "data" },
+  { path = '~/.cache/chromium', kind = "cache" },
+]
+
+[[app]]
+name = "Mozilla Firefox / Thunderbird"
+category = "browser"
+detect.names = ["firefox*", "thunderbird*", "org.mozilla.*"]
+detect.exe = ["firefox", "thunderbird"]
+paths = [
+  { path = '~/.mozilla', kind = "data" },
+  { path = '~/.thunderbird', kind = "data" },
+  { path = '~/.cache/mozilla', kind = "cache" },
+]
+
+[[app]]
+name = "Discord"
+category = "communication"
+detect.names = ["discord*", "com.discordapp.*"]
+detect.exe = ["discord"]
+paths = [ { path = '~/.config/discord', kind = "cache" } ]
+
+[[app]]
+name = "Slack"
+category = "communication"
+detect.names = ["slack*", "com.slack.*"]
+detect.exe = ["slack"]
+paths = [ { path = '~/.config/Slack', kind = "cache" } ]
+
+[[app]]
+name = "Zoom"
+category = "communication"
+detect.names = ["zoom*", "us.zoom.*"]
+detect.exe = ["zoom"]
+paths = [
+  { path = '~/.zoom', kind = "config" },
+  { path = '~/.config/zoomus.conf', kind = "config" },
+]
+
+[[app]]
+name = "Telegram"
+category = "communication"
+detect.names = ["telegram*", "org.telegram.*"]
+detect.exe = ["telegram-desktop"]
+paths = [ { path = '~/.local/share/TelegramDesktop', kind = "data" } ]
+
+# ============================== Multimedia and games ==============================
+
+[[app]]
+name = "Spotify"
+category = "multimedia"
+detect.names = ["spotify*", "com.spotify.*"]
+detect.exe = ["spotify"]
+paths = [
+  { path = '~/.config/spotify', kind = "config" },
+  { path = '~/.cache/spotify', kind = "cache" },
+]
+
+[[app]]
+name = "Steam"
+category = "games"
+detect.names = ["steam*", "com.valvesoftware.Steam*"]
+detect.exe = ["steam"]
+paths = [
+  { path = '~/.steam', kind = "app" },
+  { path = '~/.local/share/Steam', kind = "data" },
+]
+notes = "Contains installed games and local saves."
+
+[[app]]
+name = "OBS Studio"
+category = "multimedia"
+detect.names = ["obs-studio*", "com.obsproject.*"]
+detect.exe = ["obs"]
+paths = [ { path = '~/.config/obs-studio', kind = "config" } ]
+
+[[app]]
+name = "GIMP"
+category = "multimedia"
+detect.names = ["gimp*", "org.gimp.*"]
+detect.exe = ["gimp"]
+paths = [ { path = '~/.config/GIMP', kind = "config" } ]
+
+[[app]]
+name = "Blender"
+category = "multimedia"
+detect.names = ["blender*", "org.blender.*"]
+detect.exe = ["blender"]
+paths = [ { path = '~/.config/blender', kind = "config" } ]
+
+# ============================== Utilities ==============================
+
+[[app]]
+name = "Syncthing"
+category = "utilities"
+detect.names = ["syncthing*"]
+detect.exe = ["syncthing"]
+paths = [
+  { path = '~/.config/syncthing', kind = "config" },
+  { path = '~/.local/state/syncthing', kind = "data" },
+  { path = '~/Sync', kind = "data" },
+]
+notes = "Sync is the default synchronized folder: it may contain your files."
+
+[[app]]
+name = "Obsidian"
+category = "utilities"
+detect.names = ["obsidian*", "md.obsidian.*"]
+detect.exe = ["obsidian"]
+paths = [ { path = '~/.config/obsidian', kind = "config" } ]
+notes = "Notes (vaults) are in a folder chosen by the user, not here."
+
+[[app]]
+name = "Dropbox"
+category = "utilities"
+detect.names = ["dropbox*", "com.dropbox.*"]
+detect.exe = ["dropbox"]
+paths = [
+  { path = '~/.dropbox', kind = "app" },
+  { path = '~/.dropbox-dist', kind = "app" },
+]

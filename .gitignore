@@ -1,12 +1,22 @@
-# Output delle scansioni
-report/
+# Scan output
+/report/
 
-# Python
+# Go build output
+/dist/
+/husk.exe
+/husk-gui.exe
+/husk
+/husk-gui
+*.test
+*.out
+
+# Python prototype (local reference only)
+/poc/
 __pycache__/
 *.pyc
 
-# Impostazioni locali di Claude Code
+# Claude Code local settings
 .claude/settings.local.json
 
-# Voci personali del dizionario (solo locale)
+# Personal dictionary entries (local only)
 apps.user.toml

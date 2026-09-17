@@ -1,21 +1,22 @@
-# Dizionario dei programmi noti per Husk (husk.py, Windows)
+# Husk dictionary of known programs (Windows)
 #
-# [[app]]      un programma: se non viene rilevato come installato, le sue cartelle sono orfane
-#   name            nome visualizzato (unico: una voce con lo stesso nome in apps.user.toml la sostituisce)
-#   category        ai, sviluppo, browser, comunicazione, giochi, multimedia, utilità, ...
-#   detect.names    pattern (* e ?) confrontati con i nomi di registro, Store e menu Start
-#   detect.exe      eseguibili cercati nel PATH (senza estensione)
-#   detect.files    file o cartelle la cui presenza indica il programma installato
-#   paths           cartelle del programma: { path = '...', kind = "..." }
-#                   kind: app, config, cache, models, logs, data (dati utente: attenzione!)
-#   notes, clean    note libere e comando consigliato per la pulizia
+# [[app]]      a program: when it is not detected as installed, its folders are orphans
+#   name            display name; an entry with the same name in apps.user.toml extends this one:
+#                   detect and paths are merged, category, notes and clean (when set) replace these
+#   category        ai, development, browser, communication, games, multimedia, utilities, ...
+#   detect.names    patterns (* and ?) matched against registry, Store and Start menu names
+#   detect.exe      executables looked up in PATH (without extension)
+#   detect.files    files or folders whose presence means the program is installed
+#   paths           program folders: { path = '...', kind = "..." }
+#                   kind: app, config, cache, models, logs, data (user data: careful!)
+#   notes, clean    free notes and the suggested cleanup command
 #
-# [[shared]]   cache usate da più programmi: segnalate a parte, mai come orfane
+# [[shared]]   caches used by several programs: listed separately, never as orphans
 #
-# I percorsi accettano %VARIABILI% e caratteri jolly. Usa stringhe tra apici singoli
-# per non dover raddoppiare le barre rovesciate.
-# Conviene indicare cartelle al primo livello sotto le radici analizzate
-# (es. %APPDATA%\Nome): le cartelle più profonde vengono annotate sulla cartella madre.
+# Paths accept %VARIABLES% and wildcards. Use single-quoted strings
+# so backslashes do not need to be doubled.
+# Prefer first-level folders under the scanned roots
+# (e.g. %APPDATA%\Name): deeper folders are reported on their parent folder.
 
 # ============================== AI ==============================
 
@@ -32,7 +33,7 @@ paths = [
   { path = '%LOCALAPPDATA%\Programs\LM Studio', kind = "app" },
   { path = '%LOCALAPPDATA%\lm-studio-updater', kind = "cache" },
 ]
-notes = "La cartella dei modelli può essere spostata dalle impostazioni."
+notes = "The models folder can be moved in the settings."
 
 [[app]]
 name = "Ollama"
@@ -43,8 +44,9 @@ paths = [
   { path = '%USERPROFILE%\.ollama', kind = "models" },
   { path = '%LOCALAPPDATA%\Ollama', kind = "logs" },
   { path = '%LOCALAPPDATA%\Programs\Ollama', kind = "app" },
+  { path = '%APPDATA%\ollama app.exe', kind = "cache" },
 ]
-notes = "I modelli possono essere altrove se è impostata la variabile OLLAMA_MODELS."
+notes = "Models may be elsewhere if the OLLAMA_MODELS variable is set."
 
 [[app]]
 name = "GPT4All"
@@ -81,6 +83,7 @@ detect.names = ["AnythingLLM*"]
 paths = [
   { path = '%APPDATA%\anythingllm-desktop', kind = "data" },
   { path = '%LOCALAPPDATA%\anythingllm-desktop-updater', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Programs\AnythingLLM', kind = "app" },
 ]
 
 [[app]]
@@ -99,20 +102,23 @@ category = "ai"
 detect.names = ["Stability Matrix*", "StabilityMatrix*"]
 detect.exe = ["StabilityMatrix"]
 paths = [ { path = '%APPDATA%\StabilityMatrix', kind = "models" } ]
-notes = "Spesso usato in versione portabile: verifica prima di cancellare."
+notes = "Often used as a portable program: check before deleting."
 
 [[app]]
 name = "ComfyUI Desktop"
 category = "ai"
 detect.names = ["ComfyUI*"]
 paths = [ { path = '%APPDATA%\ComfyUI', kind = "config" } ]
-notes = "Modelli e output stanno nella cartella scelta all'installazione (spesso Documenti\\ComfyUI)."
+notes = "Models and outputs are in the folder chosen during setup (often Documents\\ComfyUI)."
 
 [[app]]
 name = "Upscayl"
 category = "ai"
 detect.names = ["Upscayl*"]
-paths = [ { path = '%APPDATA%\Upscayl', kind = "config" } ]
+paths = [
+  { path = '%APPDATA%\Upscayl', kind = "config" },
+  { path = '%ProgramFiles%\Upscayl', kind = "app" },
+]
 
 [[app]]
 name = "Cursor"
@@ -159,7 +165,7 @@ name = "Aider"
 category = "ai"
 detect.exe = ["aider"]
 paths = [ { path = '%USERPROFILE%\.aider', kind = "cache" } ]
-notes = "Restano anche %USERPROFILE%\\.aider.conf.yml (può contenere chiavi API) e i file .aider.* nei progetti."
+notes = "%USERPROFILE%\\.aider.conf.yml (may contain API keys) and .aider.* files in projects are left behind too."
 
 [[app]]
 name = "AiderDesk"
@@ -177,52 +183,104 @@ category = "ai"
 detect.names = ["Cline*"]
 detect.exe = ["cline"]
 paths = [ { path = '%USERPROFILE%\.cline', kind = "data" } ]
-notes = "Estensione di VS Code (anche CLI): senza VS Code né CLI la cartella è inutilizzata."
+notes = "VS Code extension (also a CLI): without VS Code or the CLI the folder is unused."
 
-# ============================== Cache condivise ==============================
+[[app]]
+name = "Goose"
+category = "ai"
+detect.names = ["Goose*"]
+detect.exe = ["goose"]
+detect.files = ['%LOCALAPPDATA%\Programs\Goose\Goose.exe', '%LOCALAPPDATA%\Goose\bin\goose.exe']
+paths = [
+  { path = '%APPDATA%\Block', kind = "config" },
+  { path = '%APPDATA%\Goose', kind = "data" },
+  { path = '%LOCALAPPDATA%\Block', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Goose', kind = "app" },
+  { path = '%USERPROFILE%\.config\goose', kind = "config" },
+]
+notes = "AI agent by Block. LOCALAPPDATA\\Goose\\bin (npx, uvx) may stay in PATH after uninstalling: remove it from the environment variables."
+
+[[app]]
+name = "Kilo Code"
+category = "ai"
+detect.names = ["Kilo Code*"]
+detect.exe = ["kilocode", "kilo"]
+paths = [
+  { path = '%USERPROFILE%\.kilocode', kind = "data" },
+  { path = '%USERPROFILE%\.kilocode-shell-integrations', kind = "config" },
+  { path = '%USERPROFILE%\.local\share\kilo', kind = "data" },
+]
+notes = "VS Code extension and CLI (npm install -g @kilocode/cli)."
+
+[[app]]
+name = "Qodo"
+category = "ai"
+detect.names = ["Qodo*"]
+detect.exe = ["qodo"]
+paths = [ { path = '%USERPROFILE%\.qodo', kind = "data" } ]
+
+[[app]]
+name = "OpenWork"
+category = "ai"
+detect.names = ["OpenWork*"]
+detect.exe = ["openwork"]
+paths = [
+  { path = '%USERPROFILE%\.openwork', kind = "data" },
+  { path = '%APPDATA%\com.differentai.openwork', kind = "config" },
+  { path = '%LOCALAPPDATA%\com.differentai.openwork', kind = "cache" },
+]
+
+[[app]]
+name = "browser-use"
+category = "ai"
+detect.exe = ["browser-use"]
+paths = [ { path = '%USERPROFILE%\.cache\browser_use', kind = "cache" } ]
+notes = "Python library: if you only tried it in a virtual environment, the folder is unused."
+
+# ============================== Shared caches ==============================
 
 [[shared]]
-name = "Modelli Datalab (marker, surya)"
+name = "Datalab models (marker, surya)"
 path = '%LOCALAPPDATA%\datalab'
 kind = "models"
-used_by = "librerie Python marker-pdf e surya-ocr"
+used_by = "Python libraries marker-pdf and surya-ocr"
 
 [[shared]]
-name = "Modelli PaddleX / PaddleOCR"
+name = "PaddleX / PaddleOCR models"
 path = '%USERPROFILE%\.paddlex'
 kind = "models"
-used_by = "librerie Python paddlex e paddleocr"
+used_by = "Python libraries paddlex and paddleocr"
 
 [[shared]]
-name = "Toolchain Rust di puccinialin"
+name = "puccinialin Rust toolchain"
 path = '%LOCALAPPDATA%\puccinialin'
 kind = "cache"
-used_by = "pip/uv, per compilare pacchetti Python scritti in Rust senza Rust installato"
+used_by = "pip/uv, to build Python packages written in Rust without a Rust installation"
 
 [[shared]]
-name = "Browser di Puppeteer"
+name = "Puppeteer browsers"
 path = '%USERPROFILE%\.chromium-browser-snapshots'
 kind = "cache"
-used_by = "Puppeteer (vecchie versioni) e strumenti Node.js basati su di esso"
+used_by = "Puppeteer (older versions) and Node.js tools based on it"
 
 [[shared]]
-name = "Cache Hugging Face"
+name = "Hugging Face cache"
 path = '%USERPROFILE%\.cache\huggingface'
 kind = "models"
-used_by = "librerie Python (transformers, diffusers), ComfyUI, WebUI e altri"
+used_by = "Python libraries (transformers, diffusers), ComfyUI, WebUI and others"
 clean = "huggingface-cli delete-cache"
 
 [[shared]]
-name = "Cache PyTorch Hub"
+name = "PyTorch Hub cache"
 path = '%USERPROFILE%\.cache\torch'
 kind = "models"
-used_by = "PyTorch e programmi basati su di esso"
+used_by = "PyTorch and programs based on it"
 
 [[shared]]
-name = "Cache Whisper"
+name = "Whisper cache"
 path = '%USERPROFILE%\.cache\whisper'
 kind = "models"
-used_by = "openai-whisper e programmi di trascrizione"
+used_by = "openai-whisper and transcription programs"
 
 [[shared]]
 name = "Keras"
@@ -231,23 +289,69 @@ kind = "models"
 used_by = "TensorFlow / Keras"
 
 [[shared]]
-name = "Pandoc scaricato da pypandoc"
+name = "Pandoc downloaded by pypandoc"
 path = '%LOCALAPPDATA%\Pandoc'
 kind = "app"
-used_by = "pypandoc (download_pandoc) e librerie Python di conversione documenti; stesso percorso dell'installer Pandoc per utente"
+used_by = "pypandoc (download_pandoc) and Python document conversion libraries; same path as the per-user Pandoc installer"
 
 [[shared]]
-name = "Cache installer InstallShield"
+name = "InstallShield installer cache"
 path = '%LOCALAPPDATA%\Downloaded Installations'
 kind = "app"
-used_by = "programmi installati con InstallShield: i .msi servono per riparare, aggiornare e disinstallare"
-notes = "Cancella una sottocartella solo se il programma del .msi che contiene non è più installato."
+used_by = "programs installed with InstallShield: the .msi files are needed to repair, update and uninstall"
+notes = "Delete a subfolder only if the program of the .msi it contains is no longer installed."
 
-# ============================== Sviluppo ==============================
+[[shared]]
+name = "Python library caches"
+paths = [
+  { path = '%LOCALAPPDATA%\pypa', kind = "cache" },
+  { path = '%LOCALAPPDATA%\pip-audit', kind = "cache" },
+  { path = '%APPDATA%\nltk_data', kind = "models" },
+  { path = '%USERPROFILE%\.matplotlib', kind = "cache" },
+  { path = '%USERPROFILE%\.triton', kind = "cache" },
+  { path = '%USERPROFILE%\.dspy_cache', kind = "cache" },
+  { path = '%USERPROFILE%\.streamlit', kind = "config" },
+]
+used_by = "virtualenv, pip-audit, NLTK, Matplotlib, Triton (PyTorch), DSPy, Streamlit, also when run with uvx or pipx"
+notes = "There is no program to detect: they can be deleted if you no longer use these libraries."
+
+[[shared]]
+name = "PsySH (PHP shell)"
+path = '%APPDATA%\PsySH'
+kind = "config"
+used_by = "PsySH, Laravel Tinker and other PHP projects installed with Composer"
+
+[[shared]]
+name = "Intel graphics driver cache"
+path = '%LOCALAPPDATA%\NEO'
+kind = "cache"
+used_by = "Intel Compute Runtime (NEO), part of the Intel graphics driver"
+
+[[shared]]
+name = "SWT libraries (Java)"
+path = '%USERPROFILE%\.swt'
+kind = "cache"
+used_by = "Java programs with an SWT user interface (Eclipse, ArubaSign, ...)"
+
+[[shared]]
+name = "Chromium Embedded Framework"
+path = '%LOCALAPPDATA%\CEF'
+kind = "cache"
+used_by = "programs that embed a Chromium browser (CEF) without a folder of their own"
+
+[[shared]]
+name = "Fyne app data"
+paths = [
+  { path = '%APPDATA%\fyne', kind = "config" },
+  { path = '%LOCALAPPDATA%\fyne', kind = "cache" },
+]
+used_by = "programs built with the Fyne toolkit (Husk included): one subfolder per application ID"
+
+# ============================== Development ==============================
 
 [[app]]
 name = "Python"
-category = "sviluppo"
+category = "development"
 detect.names = ["Python 3*", "PythonSoftwareFoundation.Python*", "Anaconda*", "Miniconda*"]
 detect.exe = ["python", "py", "python3"]
 paths = [
@@ -260,7 +364,7 @@ clean = "pip cache purge"
 
 [[app]]
 name = "Conda"
-category = "sviluppo"
+category = "development"
 detect.names = ["Anaconda*", "Miniconda*", "Miniforge*", "Mambaforge*"]
 detect.exe = ["conda", "mamba"]
 paths = [
@@ -268,12 +372,14 @@ paths = [
   { path = '%USERPROFILE%\anaconda3', kind = "app" },
   { path = '%USERPROFILE%\miniconda3', kind = "app" },
   { path = '%USERPROFILE%\miniforge3', kind = "app" },
+  { path = '%LOCALAPPDATA%\conda', kind = "cache" },
+  { path = '%LOCALAPPDATA%\conda-anaconda-tos', kind = "config" },
 ]
 clean = "conda clean --all"
 
 [[app]]
 name = "uv"
-category = "sviluppo"
+category = "development"
 detect.exe = ["uv"]
 paths = [
   { path = '%LOCALAPPDATA%\uv', kind = "cache" },
@@ -283,19 +389,25 @@ clean = "uv cache clean"
 
 [[app]]
 name = "Node.js"
-category = "sviluppo"
+category = "development"
 detect.names = ["Node.js*"]
 detect.exe = ["node"]
 paths = [
   { path = '%APPDATA%\npm', kind = "app" },
   { path = '%LOCALAPPDATA%\npm-cache', kind = "cache" },
   { path = '%USERPROFILE%\.npm', kind = "cache" },
+  { path = '%LOCALAPPDATA%\node-gyp', kind = "cache" },
+  { path = '%LOCALAPPDATA%\js-v8flags', kind = "cache" },
+  { path = '%LOCALAPPDATA%\chrome-devtools-mcp', kind = "cache" },
+  { path = '%APPDATA%\Prisma', kind = "cache" },
+  { path = '%USERPROFILE%\.config\configstore', kind = "config" },
 ]
+notes = "The extra folders belong to npm packages (node-gyp, gulp, Prisma, chrome-devtools-mcp run with npx)."
 clean = "npm cache clean --force"
 
 [[app]]
 name = "Yarn / pnpm"
-category = "sviluppo"
+category = "development"
 detect.exe = ["yarn", "pnpm"]
 paths = [
   { path = '%LOCALAPPDATA%\Yarn', kind = "cache" },
@@ -305,7 +417,7 @@ paths = [
 
 [[app]]
 name = "Rust"
-category = "sviluppo"
+category = "development"
 detect.names = ["Rustup*", "Rust *"]
 detect.exe = ["cargo", "rustup"]
 paths = [
@@ -315,18 +427,21 @@ paths = [
 
 [[app]]
 name = "Go"
-category = "sviluppo"
+category = "development"
 detect.names = ["Go Programming Language*"]
 detect.exe = ["go"]
 paths = [
   { path = '%USERPROFILE%\go', kind = "cache" },
   { path = '%LOCALAPPDATA%\go-build', kind = "cache" },
+  { path = '%APPDATA%\go', kind = "config" },
+  { path = '%ProgramFiles%\Go', kind = "app" },
 ]
 clean = "go clean -cache -modcache"
+notes = "The installer adds %USERPROFILE%\\go\\bin to PATH even before the folder exists."
 
 [[app]]
 name = ".NET SDK"
-category = "sviluppo"
+category = "development"
 detect.names = ["Microsoft .NET SDK*", "Microsoft Visual Studio*"]
 detect.exe = ["dotnet"]
 paths = [
@@ -339,17 +454,85 @@ clean = "dotnet nuget locals all --clear"
 
 [[app]]
 name = "Java / Gradle / Maven"
-category = "sviluppo"
+category = "development"
 detect.names = ["*Java*", "*JDK*", "Android Studio*", "IntelliJ*", "Eclipse*"]
 detect.exe = ["java", "gradle", "mvn"]
 paths = [
   { path = '%USERPROFILE%\.gradle', kind = "cache" },
   { path = '%USERPROFILE%\.m2', kind = "cache" },
+  { path = '%USERPROFILE%\.cache\tooling', kind = "cache" },
 ]
 
 [[app]]
+name = "Eclipse IDE"
+category = "development"
+detect.names = ["Eclipse*", "Spring Tools*", "Liferay*"]  # IDE basati su Eclipse
+detect.exe = ["eclipse"]
+paths = [
+  { path = '%USERPROFILE%\.eclipse', kind = "config" },
+  { path = '%USERPROFILE%\.p2', kind = "cache" },
+  { path = '%USERPROFILE%\.sts4', kind = "cache" },
+  { path = '%USERPROFILE%\.config\jgit', kind = "config" },
+  { path = '%LOCALAPPDATA%\Eclipse', kind = "cache" },
+]
+notes = "If installed from a zip file outside Program Files, add eclipse.exe to detect.files with an entry in apps.user.toml."
+
+[[app]]
+name = "Liferay Developer Studio"
+category = "development"
+detect.names = ["Liferay*"]
+detect.exe = ["blade"]
+paths = [
+  { path = '%USERPROFILE%\.liferay', kind = "cache" },
+  { path = '%USERPROFILE%\.liferay-ide', kind = "config" },
+  { path = '%USERPROFILE%\.bnd', kind = "cache" },
+]
+notes = "Eclipse for Liferay (often installed from a zip file) and Liferay Workspace / Blade CLI."
+
+[[app]]
+name = "Zed"
+category = "development"
+detect.names = ["Zed*"]
+detect.exe = ["zed"]
+paths = [
+  { path = '%APPDATA%\Zed', kind = "config" },
+  { path = '%LOCALAPPDATA%\Zed', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Programs\Zed', kind = "app" },
+]
+
+[[app]]
+name = "Bun"
+category = "development"
+detect.exe = ["bun"]
+paths = [ { path = '%USERPROFILE%\.bun', kind = "app" } ]
+
+[[app]]
+name = "Semgrep"
+category = "development"
+detect.exe = ["semgrep"]
+paths = [ { path = '%USERPROFILE%\.semgrep', kind = "config" } ]
+
+[[app]]
+name = "Azure CLI"
+category = "development"
+detect.names = ["Microsoft Azure CLI*"]
+detect.exe = ["az"]
+paths = [
+  { path = '%USERPROFILE%\.azure', kind = "config" },
+  { path = '%USERPROFILE%\.ms-ad', kind = "cache" },
+]
+notes = ".ms-ad is the Microsoft sign-in cache (MSAL), also used by other Azure tools."
+
+[[app]]
+name = "MinIO Client"
+category = "development"
+detect.exe = ["mc"]
+paths = [ { path = '%USERPROFILE%\mc', kind = "config" } ]
+notes = "The configuration contains the access keys of the S3 servers."
+
+[[app]]
 name = "Android Studio / SDK"
-category = "sviluppo"
+category = "development"
 detect.names = ["Android Studio*"]
 detect.exe = ["adb", "studio64"]
 paths = [
@@ -358,11 +541,11 @@ paths = [
   { path = '%APPDATA%\Google\AndroidStudio*', kind = "config" },
   { path = '%LOCALAPPDATA%\Google\AndroidStudio*', kind = "cache" },
 ]
-notes = "Le macchine virtuali degli emulatori stanno in .android\\avd."
+notes = "Emulator virtual machines are in .android\\avd."
 
 [[app]]
 name = "Docker Desktop"
-category = "sviluppo"
+category = "development"
 detect.names = ["Docker Desktop*"]
 detect.exe = ["docker"]
 paths = [
@@ -371,34 +554,37 @@ paths = [
   { path = '%APPDATA%\Docker Desktop', kind = "config" },
   { path = '%LOCALAPPDATA%\Docker', kind = "data" },
   { path = '%ProgramData%\DockerDesktop', kind = "app" },
+  { path = '%USERPROFILE%\.cagent', kind = "data" },
+  { path = '%USERPROFILE%\.config\cagent', kind = "config" },
 ]
-notes = "LOCALAPPDATA\\Docker contiene il disco WSL con immagini e volumi."
+notes = "LOCALAPPDATA\\Docker contains the WSL disk with images and volumes."
 
 [[app]]
 name = "Visual Studio Code"
-category = "sviluppo"
+category = "development"
 detect.names = ["Microsoft Visual Studio Code*"]
 detect.exe = ["code"]
 paths = [
   { path = '%USERPROFILE%\.vscode', kind = "config" },
+  { path = '%USERPROFILE%\.vscode-shared', kind = "config" },
   { path = '%APPDATA%\Code', kind = "config" },
   { path = '%LOCALAPPDATA%\Programs\Microsoft VS Code', kind = "app" },
 ]
 
 [[app]]
 name = "JetBrains IDE"
-category = "sviluppo"
+category = "development"
 detect.names = ["*JetBrains*", "IntelliJ*", "PyCharm*", "WebStorm*", "Rider*", "CLion*", "GoLand*",
                 "DataGrip*", "PhpStorm*", "RubyMine*", "RustRover*", "Fleet*"]
 paths = [
   { path = '%APPDATA%\JetBrains', kind = "config" },
   { path = '%LOCALAPPDATA%\JetBrains', kind = "cache" },
 ]
-notes = "Contiene le cartelle di tutte le versioni: quelle vecchie si possono spesso eliminare."
+notes = "Contains folders for every version: old ones can often be deleted."
 
 [[app]]
 name = "Postman"
-category = "sviluppo"
+category = "development"
 detect.names = ["Postman*"]
 paths = [
   { path = '%APPDATA%\Postman', kind = "config" },
@@ -407,7 +593,7 @@ paths = [
 
 [[app]]
 name = "Unity"
-category = "sviluppo"
+category = "development"
 detect.names = ["Unity*"]
 paths = [
   { path = '%APPDATA%\UnityHub', kind = "config" },
@@ -416,7 +602,7 @@ paths = [
 
 [[app]]
 name = "VirtualBox"
-category = "sviluppo"
+category = "development"
 detect.names = ["Oracle VirtualBox*", "Oracle VM VirtualBox*"]
 detect.exe = ["VBoxManage"]
 paths = [
@@ -427,11 +613,11 @@ paths = [
 # ============================== Browser ==============================
 
 [[app]]
-name = "Google (Chrome e altre app)"
+name = "Google (Chrome and other apps)"
 category = "browser"
 detect.names = ["Google *"]
 paths = [ { path = '%LOCALAPPDATA%\Google', kind = "data" } ]
-notes = "Contiene profili del browser (preferiti, password): non cancellare senza backup."
+notes = "Contains browser profiles (bookmarks, passwords): do not delete without a backup."
 
 [[app]]
 name = "Mozilla Firefox / Thunderbird"
@@ -464,11 +650,11 @@ category = "browser"
 detect.names = ["Vivaldi*"]
 paths = [ { path = '%LOCALAPPDATA%\Vivaldi', kind = "data" } ]
 
-# ============================== Comunicazione ==============================
+# ============================== Communication ==============================
 
 [[app]]
 name = "Discord"
-category = "comunicazione"
+category = "communication"
 detect.names = ["Discord*"]
 paths = [
   { path = '%APPDATA%\discord', kind = "cache" },
@@ -477,7 +663,7 @@ paths = [
 
 [[app]]
 name = "Slack"
-category = "comunicazione"
+category = "communication"
 detect.names = ["Slack*", "*SlackTechnologies*"]
 paths = [
   { path = '%APPDATA%\Slack', kind = "cache" },
@@ -486,13 +672,13 @@ paths = [
 
 [[app]]
 name = "Zoom"
-category = "comunicazione"
+category = "communication"
 detect.names = ["Zoom*"]
 paths = [ { path = '%APPDATA%\Zoom', kind = "app" } ]
 
 [[app]]
 name = "Telegram"
-category = "comunicazione"
+category = "communication"
 detect.names = ["Telegram*", "*TelegramDesktop*"]
 paths = [ { path = '%APPDATA%\Telegram Desktop', kind = "data" } ]
 
@@ -505,18 +691,18 @@ paths = [
   { path = '%LOCALAPPDATA%\Spotify', kind = "cache" },
 ]
 
-# ============================== Giochi ==============================
+# ============================== Games ==============================
 
 [[app]]
 name = "Steam"
-category = "giochi"
+category = "games"
 detect.names = ["Steam"]
 paths = [ { path = '%ProgramFiles(x86)%\Steam', kind = "data" } ]
-notes = "Contiene i giochi installati e i salvataggi locali."
+notes = "Contains installed games and local saves."
 
 [[app]]
 name = "Epic Games Launcher"
-category = "giochi"
+category = "games"
 detect.names = ["Epic Games Launcher*"]
 paths = [
   { path = '%LOCALAPPDATA%\EpicGamesLauncher', kind = "cache" },
@@ -526,7 +712,7 @@ paths = [
 
 [[app]]
 name = "GOG Galaxy"
-category = "giochi"
+category = "games"
 detect.names = ["GOG GALAXY*", "GOG Galaxy*"]
 paths = [
   { path = '%ProgramFiles(x86)%\GOG Galaxy', kind = "app" },
@@ -536,7 +722,7 @@ paths = [
 
 [[app]]
 name = "EA app"
-category = "giochi"
+category = "games"
 detect.names = ["EA app*", "EA Desktop*", "Origin"]
 paths = [
   { path = '%LOCALAPPDATA%\Electronic Arts', kind = "cache" },
@@ -547,20 +733,20 @@ paths = [
 
 [[app]]
 name = "Ubisoft Connect"
-category = "giochi"
+category = "games"
 detect.names = ["Ubisoft Connect*", "Uplay*"]
 paths = [ { path = '%ProgramFiles(x86)%\Ubisoft', kind = "data" } ]
 
 [[app]]
 name = "Battle.net"
-category = "giochi"
+category = "games"
 detect.names = ["Battle.net*"]
 paths = [
   { path = '%ProgramData%\Battle.net', kind = "cache" },
   { path = '%APPDATA%\Battle.net', kind = "config" },
 ]
 
-# ============================== Multimedia e grafica ==============================
+# ============================== Multimedia and graphics ==============================
 
 [[app]]
 name = "Adobe (Acrobat, Creative Cloud, Flash)"
@@ -572,8 +758,21 @@ paths = [ { path = '%USERPROFILE%\AppData\LocalLow\Adobe', kind = "cache" } ]
 name = "PhotoSì"
 category = "multimedia"
 detect.names = ["PhotoSi*", "PhotoSì*"]
-paths = [ { path = '%APPDATA%\PhotoSi', kind = "data" } ]
-notes = "Può contenere progetti di stampa non ancora ordinati."
+paths = [
+  { path = '%APPDATA%\PhotoSi', kind = "data" },
+  { path = '%ProgramFiles%\PhotoSi', kind = "app" },
+]
+notes = "May contain print projects not ordered yet."
+
+[[app]]
+name = "PhotoGenie X"
+category = "multimedia"
+detect.names = ["PhotoGenie*"]
+paths = [
+  { path = '%APPDATA%\PhotoGenie X', kind = "data" },
+  { path = '%APPDATA%\@iplabs', kind = "cache" },
+]
+notes = "Photo editor based on ip.labs: @iplabs\\pgx-electron is its Electron part."
 
 [[app]]
 name = "OBS Studio"
@@ -629,40 +828,100 @@ paths = [
   { path = '%LOCALAPPDATA%\Adobe', kind = "cache" },
   { path = '%ProgramFiles%\Adobe', kind = "app" },
   { path = '%ProgramData%\Adobe', kind = "app" },
+  { path = '%APPDATA%\com.adobe.dunamis', kind = "cache" },
+  { path = '%LOCALAPPDATA%\SolidDocuments', kind = "cache" },
 ]
+notes = "SolidDocuments is the PDF converter built into Acrobat."
 
-# ============================== Utilità ==============================
+# ============================== Utilities ==============================
 
 [[app]]
 name = "Microsoft PC Manager"
-category = "utilità"
+category = "utilities"
 detect.names = ["Microsoft PC Manager*", "*MicrosoftPCManager*", "PC Manager*"]
 paths = [ { path = '%LOCALAPPDATA%\PC Manager Store', kind = "cache" } ]
 
 [[app]]
 name = "Winhance"
-category = "utilità"
+category = "utilities"
 detect.names = ["Winhance*"]
 detect.exe = ["winhance"]
 paths = [ { path = '%ProgramData%\Winhance', kind = "data" } ]
-notes = "Anche la versione portabile scrive qui backup e log: contiene i backup delle modifiche a Windows."
+notes = "The portable version writes backups and logs here too: it holds the backups of the changes made to Windows."
+
+[[app]]
+name = "Syncthing"
+category = "utilities"
+detect.names = ["Syncthing*"]
+detect.exe = ["syncthing", "syncthingtray"]
+detect.files = ['%APPDATA%\Syncthingtray\syncthingtray.exe']
+paths = [
+  { path = '%LOCALAPPDATA%\Syncthing', kind = "data" },
+  { path = '%APPDATA%\Syncthingtray', kind = "app" },
+  { path = '%USERPROFILE%\Sync', kind = "data" },
+]
+notes = "Sync is the default synchronized folder: it may contain your files."
+
+[[app]]
+name = "ArubaSign"
+category = "utilities"
+detect.names = ["ArubaSign*"]
+paths = [
+  { path = '%USERPROFILE%\.ArubaSign', kind = "config" },
+  { path = '%USERPROFILE%\.store', kind = "data" },
+  { path = '%USERPROFILE%\.stats', kind = "cache" },
+  { path = '%LOCALAPPDATA%\ArubaSign', kind = "app" },
+  { path = '%LOCALAPPDATA%\RootUpdater', kind = "cache" },
+]
+notes = "Aruba digital signature. .store contains a key: do not delete it if you still use ArubaSign."
+
+[[app]]
+name = "Mullvad"
+category = "utilities"
+detect.names = ["Mullvad*"]
+detect.exe = ["mullvad"]
+paths = [ { path = '%APPDATA%\Mullvad', kind = "config" } ]
+
+[[app]]
+name = "S3 Browser"
+category = "utilities"
+detect.names = ["S3 Browser*"]
+paths = [ { path = '%ProgramData%\S3Browser', kind = "config" } ]
+notes = "The settings may contain the bucket access keys."
+
+[[app]]
+name = "MarkText"
+category = "utilities"
+detect.names = ["MarkText*"]
+detect.exe = ["marktext"]
+paths = [
+  { path = '%APPDATA%\marktext', kind = "config" },
+  { path = '%LOCALAPPDATA%\marktext-updater', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Programs\MarkText', kind = "app" },
+]
+
+[[app]]
+name = "PDFgear"
+category = "utilities"
+detect.names = ["PDFgear*"]
+paths = [ { path = '%LOCALAPPDATA%\PDFgear', kind = "cache" } ]
 
 [[app]]
 name = "Notepad++"
-category = "utilità"
+category = "utilities"
 detect.names = ["Notepad++*"]
 paths = [ { path = '%APPDATA%\Notepad++', kind = "config" } ]
 
 [[app]]
 name = "Obsidian"
-category = "utilità"
+category = "utilities"
 detect.names = ["Obsidian*"]
 paths = [ { path = '%APPDATA%\obsidian', kind = "config" } ]
-notes = "Le note (vault) stanno in una cartella scelta dall'utente, non qui."
+notes = "Notes (vaults) are in a folder chosen by the user, not here."
 
 [[app]]
 name = "Zotero"
-category = "utilità"
+category = "utilities"
 detect.names = ["Zotero*"]
 paths = [
   { path = '%APPDATA%\Zotero', kind = "config" },
@@ -671,7 +930,7 @@ paths = [
 
 [[app]]
 name = "Dropbox"
-category = "utilità"
+category = "utilities"
 detect.names = ["Dropbox*"]
 paths = [
   { path = '%LOCALAPPDATA%\Dropbox', kind = "app" },

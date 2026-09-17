@@ -1,4 +1,0 @@
-# Cartelle da non segnalare: un nome di cartella o un percorso completo per riga.
-# Le variabili d'ambiente vengono espanse.
-# .ssh
-# %USERPROFILE%\.cache\huggingface
