@@ -21,6 +21,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/goodmagma/husk/assets"
 	"github.com/goodmagma/husk/internal/model"
 	"github.com/goodmagma/husk/internal/platform"
 	"github.com/goodmagma/husk/internal/report"
@@ -68,10 +69,11 @@ type ui struct {
 
 func main() {
 	a := app.NewWithID(appID)
+	a.SetIcon(fyne.NewStaticResource("husk.svg", assets.IconSVG))
 	w := a.NewWindow("Husk – Leftover folders")
 	u := &ui{app: a, win: w}
 	w.SetContent(u.build())
-	w.Resize(fyne.NewSize(860, 640))
+	w.Resize(fyne.NewSize(940, 660))
 	w.ShowAndRun()
 }
 

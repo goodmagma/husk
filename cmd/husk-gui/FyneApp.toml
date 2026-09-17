@@ -1,4 +1,5 @@
 [Details]
+Icon = "../../assets/icon.png"
 Name = "Husk"
 ID = "io.github.goodmagma.husk"
 Version = "0.1.0"

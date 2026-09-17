@@ -60,6 +60,8 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 | `internal/platform` | per sistema: radici, fonti dei programmi, PATH, esclusioni, `OpenURL` (`windows.go`, `linux.go`, `darwin.go`, `unix.go`) |
 | `internal/scanner` | scansione parallela, classificazione, controllo del PATH (`pathcheck.go`) |
 | `internal/version` | versione del programma (0.1.0), da allineare con `cmd/husk-gui/FyneApp.toml`; sovrascrivibile con `-ldflags -X .../internal/version.Version=...` |
+| `assets/` | `icon.svg` (logo: cartella vuota con lente su quadrato arancione; icona della finestra via `go:embed`, logo del README), `icon.png` 256 px per `fyne package` (`FyneApp.toml`). Il renderer SVG di Fyne ignora `rx` sui `rect` e non scala bene gli spessori: disegnare con `path` e rigenerare il PNG con `go run ./tools/svg2png assets/icon.svg assets/icon.png 256` |
+| `tools/svg2png` | converte l'SVG in PNG (disegna a 256 px e ridimensiona) |
 | `docs/images/` | immagini del README (`husk-gui.png`: screenshot della GUI, nome utente oscurato) |
 | `internal/report` | HTML (`template.html` incorporato), CSV, suggerimenti; `text.go`: report testuale (`WriteText`) usato da CLI e registro della GUI |
 | `poc/` | PoC Python: `husk.py`, `ignore.txt`, `apps.user.toml`; solo locale, escluso dal repository (`.gitignore`) |

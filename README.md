@@ -1,3 +1,5 @@
+<img src="assets/icon.svg" alt="Husk logo" width="96" align="right">
+
 # Husk
 
 Finds the folders left behind by uninstalled programs. Report only: nothing is ever deleted.
@@ -52,6 +54,12 @@ GOOS=darwin GOARCH=arm64 go build -o dist/husk-macos ./cmd/husk
 ```
 
 The GUI must be built on the target system.
+
+Icon: `assets/icon.svg` (window icon and logo); after changing it, regenerate the PNG used for packaging:
+
+```bash
+go run ./tools/svg2png assets/icon.svg assets/icon.png 256
+```
 
 Version: `internal/version/version.go` (keep `cmd/husk-gui/FyneApp.toml` in sync), or at build time:
 
