@@ -23,6 +23,7 @@ var htmlTemplate string
 
 // Files lists the files written by Write.
 type Files struct {
+	Dir         string // folder of this scan
 	HTML        string
 	CSV         string
 	Programs    string
@@ -31,18 +32,22 @@ type Files struct {
 	SuggestN    int
 }
 
-// Write saves all report files in dir.
-func Write(rep *scanner.Report, dir, version string) (Files, error) {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+// Write saves all report files in a new folder husk_<date>_<time> inside parent.
+func Write(rep *scanner.Report, parent, version string) (Files, error) {
+	if err := os.MkdirAll(parent, 0o755); err != nil {
 		return Files{}, err
 	}
-	stamp := rep.Started.Format("20060102_150405")
+	dir, err := newRunDir(parent, "husk_"+rep.Started.Format("20060102_150405"))
+	if err != nil {
+		return Files{}, err
+	}
 	f := Files{
-		HTML:        filepath.Join(dir, "husk_report_"+stamp+".html"),
-		CSV:         filepath.Join(dir, "husk_report_"+stamp+".csv"),
-		Programs:    filepath.Join(dir, "husk_programs_"+stamp+".csv"),
-		Path:        filepath.Join(dir, "husk_path_"+stamp+".csv"),
-		Suggestions: filepath.Join(dir, "husk_suggestions_"+stamp+".toml"),
+		Dir:         dir,
+		HTML:        filepath.Join(dir, "husk_report.html"),
+		CSV:         filepath.Join(dir, "husk_report.csv"),
+		Programs:    filepath.Join(dir, "husk_programs.csv"),
+		Path:        filepath.Join(dir, "husk_path.csv"),
+		Suggestions: filepath.Join(dir, "husk_suggestions.toml"),
 	}
 	if err := os.WriteFile(f.HTML, []byte(HTML(rep, version)), 0o644); err != nil {
 		return f, err
@@ -64,6 +69,23 @@ func Write(rep *scanner.Report, dir, version string) (Files, error) {
 		return f, err
 	}
 	return f, nil
+}
+
+// newRunDir creates parent/name, or parent/name_2, name_3, ... if it already exists.
+func newRunDir(parent, name string) (string, error) {
+	for i := 1; ; i++ {
+		dir := filepath.Join(parent, name)
+		if i > 1 {
+			dir = fmt.Sprintf("%s_%d", dir, i)
+		}
+		err := os.Mkdir(dir, 0o755)
+		if err == nil {
+			return dir, nil
+		}
+		if !os.IsExist(err) || i >= 100 {
+			return "", err
+		}
+	}
 }
 
 // FmtSize formats a size in bytes (1.5 MB).

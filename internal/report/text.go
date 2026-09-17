@@ -14,8 +14,15 @@ import (
 // DefaultStatuses are the statuses listed by default in the text report.
 var DefaultStatuses = []model.Status{model.Orphan, model.Suspect, model.Portable, model.Shared}
 
-// DefaultDir is the default folder for report files: "husk" in the system temporary folder.
+// DefaultDir is the default parent folder for report files: the system temporary folder.
+// Each scan writes its files in a husk_<date>_<time> subfolder.
 func DefaultDir() string {
+	return os.TempDir()
+}
+
+// OldDefaultDir is the default folder used before version 0.1.0 was released;
+// the GUI replaces a saved value equal to it with DefaultDir.
+func OldDefaultDir() string {
 	return filepath.Join(os.TempDir(), "husk")
 }
 
@@ -119,7 +126,8 @@ func WriteText(w io.Writer, rep *scanner.Report, opt TextOptions) {
 
 // WriteFileList prints the paths of the report files.
 func WriteFileList(w io.Writer, f Files) {
-	fmt.Fprintf(w, "\nReport:      %s\n", f.HTML)
+	fmt.Fprintf(w, "\nFolder:      %s\n", f.Dir)
+	fmt.Fprintf(w, "Report:      %s\n", f.HTML)
 	fmt.Fprintf(w, "CSV:         %s\n", f.CSV)
 	fmt.Fprintf(w, "Programs:    %s\n", f.Programs)
 	fmt.Fprintf(w, "PATH:        %s\n", f.Path)

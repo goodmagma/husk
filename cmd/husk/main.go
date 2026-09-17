@@ -42,7 +42,7 @@ func run() int {
 		"statuses to list folder by folder: orphan, suspect, portable, shared, associated, ignored, or all")
 	verbose := fs.Bool("v", false, "print the match and the notes of each folder")
 	writeReport := fs.Bool("report", false, "write the HTML/CSV report files and open the HTML page")
-	out := fs.String("out", report.DefaultDir(), "folder for the report files (with --report)")
+	out := fs.String("out", report.DefaultDir(), "parent folder of the husk_<date>_<time> report folder (with --report)")
 	noOpen := fs.Bool("no-open", false, "with --report, do not open the HTML page")
 	fs.IntVar(&opt.Workers, "workers", opt.Workers, "folders scanned in parallel")
 	showVersion := fs.Bool("version", false, "print the version and exit")

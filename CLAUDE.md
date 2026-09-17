@@ -33,7 +33,7 @@ con winget. Fyne v2.8.1 nel go.mod. Setup e comandi sono nel `README.md` (stile:
 Comportamento (richiesto dall'utente il 17/09/2026): la CLI di default stampa il report completo come un
 normale comando (sezioni per stato; `--show` sceglie gli stati elencati, default orphan,suspect,portable,shared;
 gli altri stati compaiono solo come riga di riepilogo); i file HTML/CSV solo con `--report`, in
-`%TEMP%\husk` di default (`report.DefaultDir()`). La GUI scrive sempre i file (default uguale, preferenza
+una cartella `husk_<data>_<ora>` dentro `%TEMP%` di default. La GUI scrive sempre i file (default uguale, preferenza
 `reportDir`) e nel registro mostra lo stesso testo della CLI.
 
 Stato Go: CLI completa per Windows e verificata sul PC (stessa classificazione del PoC su 285 cartelle,
@@ -139,7 +139,7 @@ caratteri jolly, vince la voce più specifica) **non** viene segnalata se il pro
 installato: "belongs to X, which is not installed". `~/.local/bin` (e `%USERPROFILE%\.local\bin`) è una
 voce `[[shared]]` "User executables"; .NET SDK aggiunto anche a linux/darwin.toml.
 Test: `internal/scanner/pathcheck_test.go` (`CheckPath`, `Dictionary.Owner`). Sezione in fondo al report
-HTML, file `husk_path_*.csv`, elenco in console.
+HTML, file `husk_path.csv`, elenco in console.
 
 Report HTML: filtri per stato, menu "Dimensione minima" (default 100 MB), colonne ordinabili.
 In console: i primi 15 orfani per dimensione.
@@ -174,8 +174,10 @@ Da tenere:
   `Prisma`, `configstore`, `chrome-devtools-mcp`) sono nella voce Node.js; `Roaming\fyne` e
   `Local\fyne` (dati delle app Fyne, compreso husk-gui) sono una voce `[[shared]]`.
 
-Output Go: `husk_report_*.html/csv` (CSV con virgola), `husk_programs_*.csv`, `husk_path_*.csv`,
-`husk_suggestions_*.toml`. Il PoC usa ancora i nomi italiani (`husk_programmi_*`, `husk_suggerimenti_*`).
+Output Go (richiesta dell'utente, 17/09/2026): ogni scansione crea `husk_<data>_<ora>` (suffisso `_2`, `_3`
+se esiste già) dentro la cartella scelta (default: cartella temporanea di sistema, `report.DefaultDir()`) con
+`husk_report.html/csv` (CSV con virgola), `husk_programs.csv`, `husk_path.csv`, `husk_suggestions.toml`.
+La GUI sostituisce la vecchia preferenza `%TEMP%\husk` con il nuovo default. Il PoC usa ancora i nomi italiani (`husk_programmi_*`, `husk_suggerimenti_*`).
 Stati nella versione Go: `orphan`, `suspect`, `portable`, `shared`, `associated`, `ignored`
 (nel PoC e più sotto in questo file: orfano, sospetto, portabile, condivisa, associato, ignorato).
 Ultimo report (17/09/2026, Go e PoC uguali): 59 probabili orfani (4,8 GB) e 19 cache condivise (4,5 GB);

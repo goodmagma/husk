@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -100,7 +99,11 @@ func (u *ui) build() fyne.CanvasObject {
 	}
 
 	u.outDir = widget.NewEntry()
-	u.outDir.SetText(prefs.StringWithFallback("reportDir", report.DefaultDir()))
+	outDir := prefs.StringWithFallback("reportDir", report.DefaultDir())
+	if outDir == report.OldDefaultDir() {
+		outDir = report.DefaultDir()
+	}
+	u.outDir.SetText(outDir)
 	browse := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), u.chooseOutDir)
 
 	u.all = widget.NewCheck("Include system folders", nil)
@@ -260,7 +263,7 @@ func (u *ui) showResults(rep *scanner.Report) {
 	openReport.Importance = widget.HighImportance
 	u.actions.Add(openReport)
 	u.actions.Add(widget.NewButtonWithIcon("Open report folder", theme.FolderOpenIcon(), func() {
-		u.open(filepath.Dir(u.files.HTML))
+		u.open(u.files.Dir)
 	}))
 	u.actions.Add(widget.NewButtonWithIcon("Copy log", theme.ContentCopyIcon(), func() {
 		u.app.Clipboard().SetContent(u.log.Text)

@@ -81,8 +81,9 @@ dist/husk --report --out report --no-open
 dist/husk --help                  # all options: --days, --min-mb, --all, --workers, ...
 ```
 
-Report files (`--report`, default folder `husk` in the system temp folder):
-`husk_report_*.html/csv`, `husk_programs_*.csv`, `husk_path_*.csv`, `husk_suggestions_*.toml`.
+Report files (`--report`): each scan creates a `husk_<date>_<time>` folder inside `--out`
+(default: the system temp folder) with `husk_report.html`, `husk_report.csv`, `husk_programs.csv`,
+`husk_path.csv` and `husk_suggestions.toml`.
 `husk-gui` always writes them and shows the same text as the CLI in its log.
 
 ## Local configuration
