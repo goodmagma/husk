@@ -8,7 +8,6 @@ Nome precedente: Ghostdir. **Nome scelto: Husk** (comando `husk`).
 ## Regole di lavoro
 
 - Nei commit **mai** `Co-Authored-By: Claude` né altre righe di attribuzione.
-- `HANDOFF.md` è servito solo a portare qui una chat di claude.ai: **non usarlo come riferimento**.
 - Lo script resta solo libreria standard Python (3.11+, serve `tomllib`).
 - Il dizionario TOML deve restare riusabile così com'è dalla futura versione Go.
 - Lingua: italiano per UI, report, commenti e dizionario.
@@ -31,10 +30,9 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 |---|---|
 | `husk.py` | lo scanner |
 | `apps.toml` | dizionario integrato: `[[app]]`, `[[shared]]` (cache condivise) |
-| `apps.user.toml` | voci personali ed esclusioni (contiene Liferay Developer Studio) |
+| `apps.user.toml` | voci personali ed esclusioni (contiene Liferay Developer Studio), solo locale, non va nel repository |
 | `ignore.txt` | esclusioni semplici per nome o percorso |
 | `report/` | output delle scansioni (non va nel repository) |
-| `HANDOFF.md` | vecchio riassunto della chat: ignorare, si può cancellare |
 
 Avvio: `py husk.py --out report` (opzioni: `--min-mb`, `--days 90`, `--all`, `--no-open`, `--workers`).
 Durata di una scansione sul PC dell'utente: circa 10 s.

@@ -8,5 +8,5 @@ __pycache__/
 # Impostazioni locali di Claude Code
 .claude/settings.local.json
 
-# Vecchio riassunto della chat, non fa parte del progetto
-HANDOFF.md
+# Voci personali del dizionario (solo locale)
+apps.user.toml
