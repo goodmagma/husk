@@ -195,7 +195,11 @@ revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
 2. Test automatici (`go test ./...`): ci sono solo `CheckPath` e `Dictionary.Owner`; mancano matcher, dizionario (unione delle voci),
    pathutil, classificazione.
 3. Provare Linux e macOS (macchine reali o CI) e ampliare `linux.toml` e `darwin.toml`.
-4. Pipeline GitHub Actions scritte (17/09/2026) ma non ancora eseguite: provare con avvio manuale di
+4. Pipeline GitHub Actions: la prima CI (17/09/2026) è passata su Windows e macOS e fallita su Linux
+   perché GLFW 3.4 compila anche Wayland: servono `libwayland-dev libxkbcommon-dev wayland-protocols`
+   oltre a `gcc libgl1-mesa-dev xorg-dev` (verificato in Docker con `golang:1.27`; Docker Desktop è
+   installato e serve per riprodurre la CI Linux). Action aggiornate a Node 24 (checkout/setup-go v7,
+   upload-artifact v7, download-artifact v8, action-gh-release v3). Release non ancora eseguita: provare con avvio manuale di
    Release, poi tag `v0.1.0`. Punti incerti: gcc sul runner Windows (fallback `choco install mingw`),
    GUI macOS amd64 compilata da Apple silicon, nome/posizione di `Husk.tar.xz` su Linux.
    `fyne package` (fyne.io/tools v1.7.2) non accetta `-ldflags`, crea `cmd/husk-gui/Husk.exe` e

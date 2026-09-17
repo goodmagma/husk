@@ -22,7 +22,7 @@ winget install GoLang.Go
 winget install BrechtSanders.WinLibs.POSIX.UCRT
 
 # Debian/Ubuntu
-sudo apt install golang gcc libgl1-mesa-dev xorg-dev
+sudo apt install golang gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
 
 # macOS
 xcode-select --install
