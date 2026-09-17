@@ -1,7 +1,9 @@
 # Husk
 
 Finds the folders left behind by uninstalled programs. Report only: nothing is ever deleted.
-Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne).
+Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne). Version 0.1.0.
+
+![husk-gui](docs/images/husk-gui.png)
 
 ## Requirements
 
@@ -50,6 +52,12 @@ GOOS=darwin GOARCH=arm64 go build -o dist/husk-macos ./cmd/husk
 ```
 
 The GUI must be built on the target system.
+
+Version: `internal/version/version.go` (keep `cmd/husk-gui/FyneApp.toml` in sync), or at build time:
+
+```bash
+go build -ldflags "-X github.com/goodmagma/husk/internal/version.Version=0.2.0" -o dist/husk ./cmd/husk
+```
 
 ## Usage
 

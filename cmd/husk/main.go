@@ -17,10 +17,11 @@ import (
 	"github.com/goodmagma/husk/internal/platform"
 	"github.com/goodmagma/husk/internal/report"
 	"github.com/goodmagma/husk/internal/scanner"
+	hversion "github.com/goodmagma/husk/internal/version"
 )
 
-// version is set at build time: -ldflags "-X main.version=1.0.0".
-var version = "dev"
+// version is the program version (see internal/version).
+var version = hversion.Version
 
 func main() {
 	os.Exit(run())

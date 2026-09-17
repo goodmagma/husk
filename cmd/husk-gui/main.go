@@ -25,10 +25,11 @@ import (
 	"github.com/goodmagma/husk/internal/platform"
 	"github.com/goodmagma/husk/internal/report"
 	"github.com/goodmagma/husk/internal/scanner"
+	hversion "github.com/goodmagma/husk/internal/version"
 )
 
-// version is set at build time: -ldflags "-X main.version=1.0.0".
-var version = "dev"
+// version is the program version (see internal/version).
+var version = hversion.Version
 
 const appID = "io.github.goodmagma.husk"
 
@@ -122,6 +123,7 @@ func (u *ui) build() fyne.CanvasObject {
 	u.actions = container.NewHBox()
 	u.log = widget.NewLabel("")
 	u.log.TextStyle = fyne.TextStyle{Monospace: true}
+	u.log.Selectable = true // select with the mouse, copy with Ctrl+C or the context menu
 
 	// options in three compact rows
 	daysBox := container.NewGridWrap(fyne.NewSize(90, u.days.MinSize().Height), u.days)
@@ -257,6 +259,10 @@ func (u *ui) showResults(rep *scanner.Report) {
 	u.actions.Add(openReport)
 	u.actions.Add(widget.NewButtonWithIcon("Open report folder", theme.FolderOpenIcon(), func() {
 		u.open(filepath.Dir(u.files.HTML))
+	}))
+	u.actions.Add(widget.NewButtonWithIcon("Copy log", theme.ContentCopyIcon(), func() {
+		u.app.Clipboard().SetContent(u.log.Text)
+		u.phase.SetText("Log copied to the clipboard.")
 	}))
 	if u.files.SuggestN > 0 {
 		u.actions.Add(widget.NewButtonWithIcon(fmt.Sprintf("Suggestions (%d)", u.files.SuggestN), theme.FileIcon(), func() {
