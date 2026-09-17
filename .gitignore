@@ -1,0 +1,12 @@
+# Output delle scansioni
+report/
+
+# Python
+__pycache__/
+*.pyc
+
+# Impostazioni locali di Claude Code
+.claude/settings.local.json
+
+# Vecchio riassunto della chat, non fa parte del progetto
+HANDOFF.md

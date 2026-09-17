@@ -1,0 +1,691 @@
+# Dizionario dei programmi noti per Husk (husk.py, Windows)
+#
+# [[app]]      un programma: se non viene rilevato come installato, le sue cartelle sono orfane
+#   name            nome visualizzato (unico: una voce con lo stesso nome in apps.user.toml la sostituisce)
+#   category        ai, sviluppo, browser, comunicazione, giochi, multimedia, utilità, ...
+#   detect.names    pattern (* e ?) confrontati con i nomi di registro, Store e menu Start
+#   detect.exe      eseguibili cercati nel PATH (senza estensione)
+#   detect.files    file o cartelle la cui presenza indica il programma installato
+#   paths           cartelle del programma: { path = '...', kind = "..." }
+#                   kind: app, config, cache, models, logs, data (dati utente: attenzione!)
+#   notes, clean    note libere e comando consigliato per la pulizia
+#
+# [[shared]]   cache usate da più programmi: segnalate a parte, mai come orfane
+#
+# I percorsi accettano %VARIABILI% e caratteri jolly. Usa stringhe tra apici singoli
+# per non dover raddoppiare le barre rovesciate.
+# Conviene indicare cartelle al primo livello sotto le radici analizzate
+# (es. %APPDATA%\Nome): le cartelle più profonde vengono annotate sulla cartella madre.
+
+# ============================== AI ==============================
+
+[[app]]
+name = "LM Studio"
+category = "ai"
+detect.names = ["LM Studio*"]
+detect.exe = ["lms"]
+detect.files = ['%LOCALAPPDATA%\Programs\LM Studio\LM Studio.exe']
+paths = [
+  { path = '%USERPROFILE%\.lmstudio', kind = "models" },
+  { path = '%USERPROFILE%\.cache\lm-studio', kind = "models" },
+  { path = '%APPDATA%\LM Studio', kind = "config" },
+  { path = '%LOCALAPPDATA%\Programs\LM Studio', kind = "app" },
+  { path = '%LOCALAPPDATA%\lm-studio-updater', kind = "cache" },
+]
+notes = "La cartella dei modelli può essere spostata dalle impostazioni."
+
+[[app]]
+name = "Ollama"
+category = "ai"
+detect.names = ["Ollama*"]
+detect.exe = ["ollama"]
+paths = [
+  { path = '%USERPROFILE%\.ollama', kind = "models" },
+  { path = '%LOCALAPPDATA%\Ollama', kind = "logs" },
+  { path = '%LOCALAPPDATA%\Programs\Ollama', kind = "app" },
+]
+notes = "I modelli possono essere altrove se è impostata la variabile OLLAMA_MODELS."
+
+[[app]]
+name = "GPT4All"
+category = "ai"
+detect.names = ["GPT4All*"]
+paths = [
+  { path = '%LOCALAPPDATA%\nomic.ai', kind = "models" },
+  { path = '%APPDATA%\nomic.ai', kind = "config" },
+  { path = '%USERPROFILE%\gpt4all', kind = "app" },
+]
+
+[[app]]
+name = "Jan"
+category = "ai"
+detect.names = ["Jan", "Jan *"]
+paths = [
+  { path = '%APPDATA%\Jan', kind = "models" },
+  { path = '%USERPROFILE%\jan', kind = "models" },
+  { path = '%LOCALAPPDATA%\Programs\jan', kind = "app" },
+  { path = '%LOCALAPPDATA%\jan.ai.app', kind = "cache" },
+  { path = '%APPDATA%\jan.ai.app', kind = "config" },
+]
+
+[[app]]
+name = "Msty"
+category = "ai"
+detect.names = ["Msty*"]
+paths = [ { path = '%APPDATA%\Msty', kind = "models" } ]
+
+[[app]]
+name = "AnythingLLM"
+category = "ai"
+detect.names = ["AnythingLLM*"]
+paths = [
+  { path = '%APPDATA%\anythingllm-desktop', kind = "data" },
+  { path = '%LOCALAPPDATA%\anythingllm-desktop-updater', kind = "cache" },
+]
+
+[[app]]
+name = "Pinokio"
+category = "ai"
+detect.names = ["Pinokio*"]
+paths = [
+  { path = '%USERPROFILE%\pinokio', kind = "models" },
+  { path = '%APPDATA%\Pinokio', kind = "config" },
+  { path = '%LOCALAPPDATA%\pinokio-updater', kind = "cache" },
+]
+
+[[app]]
+name = "Stability Matrix"
+category = "ai"
+detect.names = ["Stability Matrix*", "StabilityMatrix*"]
+detect.exe = ["StabilityMatrix"]
+paths = [ { path = '%APPDATA%\StabilityMatrix', kind = "models" } ]
+notes = "Spesso usato in versione portabile: verifica prima di cancellare."
+
+[[app]]
+name = "ComfyUI Desktop"
+category = "ai"
+detect.names = ["ComfyUI*"]
+paths = [ { path = '%APPDATA%\ComfyUI', kind = "config" } ]
+notes = "Modelli e output stanno nella cartella scelta all'installazione (spesso Documenti\\ComfyUI)."
+
+[[app]]
+name = "Upscayl"
+category = "ai"
+detect.names = ["Upscayl*"]
+paths = [ { path = '%APPDATA%\Upscayl', kind = "config" } ]
+
+[[app]]
+name = "Cursor"
+category = "ai"
+detect.names = ["Cursor*"]
+detect.exe = ["cursor"]
+paths = [
+  { path = '%USERPROFILE%\.cursor', kind = "config" },
+  { path = '%APPDATA%\Cursor', kind = "config" },
+  { path = '%LOCALAPPDATA%\Programs\cursor', kind = "app" },
+]
+
+[[app]]
+name = "Windsurf"
+category = "ai"
+detect.names = ["Windsurf*"]
+detect.exe = ["windsurf"]
+paths = [
+  { path = '%USERPROFILE%\.windsurf', kind = "config" },
+  { path = '%USERPROFILE%\.codeium', kind = "config" },
+  { path = '%APPDATA%\Windsurf', kind = "config" },
+]
+
+[[app]]
+name = "Claude Desktop"
+category = "ai"
+detect.names = ["Claude", "Claude *", "*AnthropicClaude*"]
+paths = [
+  { path = '%APPDATA%\Claude', kind = "config" },
+  { path = '%LOCALAPPDATA%\AnthropicClaude', kind = "app" },
+]
+
+[[app]]
+name = "Claude Code"
+category = "ai"
+detect.exe = ["claude"]
+paths = [
+  { path = '%USERPROFILE%\.claude', kind = "config" },
+  { path = '%USERPROFILE%\.local\share\claude', kind = "app" },
+]
+
+[[app]]
+name = "Aider"
+category = "ai"
+detect.exe = ["aider"]
+paths = [ { path = '%USERPROFILE%\.aider', kind = "cache" } ]
+notes = "Restano anche %USERPROFILE%\\.aider.conf.yml (può contenere chiavi API) e i file .aider.* nei progetti."
+
+[[app]]
+name = "AiderDesk"
+category = "ai"
+detect.names = ["AiderDesk*", "aider-desk*"]
+paths = [
+  { path = '%APPDATA%\aider-desk', kind = "data" },
+  { path = '%LOCALAPPDATA%\aider-desk-updater', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Programs\aider-desk', kind = "app" },
+]
+
+[[app]]
+name = "Cline"
+category = "ai"
+detect.names = ["Cline*"]
+detect.exe = ["cline"]
+paths = [ { path = '%USERPROFILE%\.cline', kind = "data" } ]
+notes = "Estensione di VS Code (anche CLI): senza VS Code né CLI la cartella è inutilizzata."
+
+# ============================== Cache condivise ==============================
+
+[[shared]]
+name = "Modelli Datalab (marker, surya)"
+path = '%LOCALAPPDATA%\datalab'
+kind = "models"
+used_by = "librerie Python marker-pdf e surya-ocr"
+
+[[shared]]
+name = "Modelli PaddleX / PaddleOCR"
+path = '%USERPROFILE%\.paddlex'
+kind = "models"
+used_by = "librerie Python paddlex e paddleocr"
+
+[[shared]]
+name = "Toolchain Rust di puccinialin"
+path = '%LOCALAPPDATA%\puccinialin'
+kind = "cache"
+used_by = "pip/uv, per compilare pacchetti Python scritti in Rust senza Rust installato"
+
+[[shared]]
+name = "Browser di Puppeteer"
+path = '%USERPROFILE%\.chromium-browser-snapshots'
+kind = "cache"
+used_by = "Puppeteer (vecchie versioni) e strumenti Node.js basati su di esso"
+
+[[shared]]
+name = "Cache Hugging Face"
+path = '%USERPROFILE%\.cache\huggingface'
+kind = "models"
+used_by = "librerie Python (transformers, diffusers), ComfyUI, WebUI e altri"
+clean = "huggingface-cli delete-cache"
+
+[[shared]]
+name = "Cache PyTorch Hub"
+path = '%USERPROFILE%\.cache\torch'
+kind = "models"
+used_by = "PyTorch e programmi basati su di esso"
+
+[[shared]]
+name = "Cache Whisper"
+path = '%USERPROFILE%\.cache\whisper'
+kind = "models"
+used_by = "openai-whisper e programmi di trascrizione"
+
+[[shared]]
+name = "Keras"
+path = '%USERPROFILE%\.keras'
+kind = "models"
+used_by = "TensorFlow / Keras"
+
+[[shared]]
+name = "Pandoc scaricato da pypandoc"
+path = '%LOCALAPPDATA%\Pandoc'
+kind = "app"
+used_by = "pypandoc (download_pandoc) e librerie Python di conversione documenti; stesso percorso dell'installer Pandoc per utente"
+
+[[shared]]
+name = "Cache installer InstallShield"
+path = '%LOCALAPPDATA%\Downloaded Installations'
+kind = "app"
+used_by = "programmi installati con InstallShield: i .msi servono per riparare, aggiornare e disinstallare"
+notes = "Cancella una sottocartella solo se il programma del .msi che contiene non è più installato."
+
+# ============================== Sviluppo ==============================
+
+[[app]]
+name = "Python"
+category = "sviluppo"
+detect.names = ["Python 3*", "PythonSoftwareFoundation.Python*", "Anaconda*", "Miniconda*"]
+detect.exe = ["python", "py", "python3"]
+paths = [
+  { path = '%LOCALAPPDATA%\pip', kind = "cache" },
+  { path = '%APPDATA%\Python', kind = "app" },
+  { path = '%USERPROFILE%\.ipython', kind = "config" },
+  { path = '%USERPROFILE%\.jupyter', kind = "config" },
+]
+clean = "pip cache purge"
+
+[[app]]
+name = "Conda"
+category = "sviluppo"
+detect.names = ["Anaconda*", "Miniconda*", "Miniforge*", "Mambaforge*"]
+detect.exe = ["conda", "mamba"]
+paths = [
+  { path = '%USERPROFILE%\.conda', kind = "cache" },
+  { path = '%USERPROFILE%\anaconda3', kind = "app" },
+  { path = '%USERPROFILE%\miniconda3', kind = "app" },
+  { path = '%USERPROFILE%\miniforge3', kind = "app" },
+]
+clean = "conda clean --all"
+
+[[app]]
+name = "uv"
+category = "sviluppo"
+detect.exe = ["uv"]
+paths = [
+  { path = '%LOCALAPPDATA%\uv', kind = "cache" },
+  { path = '%APPDATA%\uv', kind = "app" },
+]
+clean = "uv cache clean"
+
+[[app]]
+name = "Node.js"
+category = "sviluppo"
+detect.names = ["Node.js*"]
+detect.exe = ["node"]
+paths = [
+  { path = '%APPDATA%\npm', kind = "app" },
+  { path = '%LOCALAPPDATA%\npm-cache', kind = "cache" },
+  { path = '%USERPROFILE%\.npm', kind = "cache" },
+]
+clean = "npm cache clean --force"
+
+[[app]]
+name = "Yarn / pnpm"
+category = "sviluppo"
+detect.exe = ["yarn", "pnpm"]
+paths = [
+  { path = '%LOCALAPPDATA%\Yarn', kind = "cache" },
+  { path = '%LOCALAPPDATA%\pnpm', kind = "cache" },
+  { path = '%LOCALAPPDATA%\pnpm-cache', kind = "cache" },
+]
+
+[[app]]
+name = "Rust"
+category = "sviluppo"
+detect.names = ["Rustup*", "Rust *"]
+detect.exe = ["cargo", "rustup"]
+paths = [
+  { path = '%USERPROFILE%\.cargo', kind = "app" },
+  { path = '%USERPROFILE%\.rustup', kind = "app" },
+]
+
+[[app]]
+name = "Go"
+category = "sviluppo"
+detect.names = ["Go Programming Language*"]
+detect.exe = ["go"]
+paths = [
+  { path = '%USERPROFILE%\go', kind = "cache" },
+  { path = '%LOCALAPPDATA%\go-build', kind = "cache" },
+]
+clean = "go clean -cache -modcache"
+
+[[app]]
+name = ".NET SDK"
+category = "sviluppo"
+detect.names = ["Microsoft .NET SDK*", "Microsoft Visual Studio*"]
+detect.exe = ["dotnet"]
+paths = [
+  { path = '%USERPROFILE%\.nuget', kind = "cache" },
+  { path = '%USERPROFILE%\.dotnet', kind = "config" },
+  { path = '%LOCALAPPDATA%\NuGet', kind = "cache" },
+  { path = '%ProgramFiles%\dotnet', kind = "app" },
+]
+clean = "dotnet nuget locals all --clear"
+
+[[app]]
+name = "Java / Gradle / Maven"
+category = "sviluppo"
+detect.names = ["*Java*", "*JDK*", "Android Studio*", "IntelliJ*", "Eclipse*"]
+detect.exe = ["java", "gradle", "mvn"]
+paths = [
+  { path = '%USERPROFILE%\.gradle', kind = "cache" },
+  { path = '%USERPROFILE%\.m2', kind = "cache" },
+]
+
+[[app]]
+name = "Android Studio / SDK"
+category = "sviluppo"
+detect.names = ["Android Studio*"]
+detect.exe = ["adb", "studio64"]
+paths = [
+  { path = '%LOCALAPPDATA%\Android', kind = "app" },
+  { path = '%USERPROFILE%\.android', kind = "data" },
+  { path = '%APPDATA%\Google\AndroidStudio*', kind = "config" },
+  { path = '%LOCALAPPDATA%\Google\AndroidStudio*', kind = "cache" },
+]
+notes = "Le macchine virtuali degli emulatori stanno in .android\\avd."
+
+[[app]]
+name = "Docker Desktop"
+category = "sviluppo"
+detect.names = ["Docker Desktop*"]
+detect.exe = ["docker"]
+paths = [
+  { path = '%USERPROFILE%\.docker', kind = "config" },
+  { path = '%APPDATA%\Docker', kind = "config" },
+  { path = '%APPDATA%\Docker Desktop', kind = "config" },
+  { path = '%LOCALAPPDATA%\Docker', kind = "data" },
+  { path = '%ProgramData%\DockerDesktop', kind = "app" },
+]
+notes = "LOCALAPPDATA\\Docker contiene il disco WSL con immagini e volumi."
+
+[[app]]
+name = "Visual Studio Code"
+category = "sviluppo"
+detect.names = ["Microsoft Visual Studio Code*"]
+detect.exe = ["code"]
+paths = [
+  { path = '%USERPROFILE%\.vscode', kind = "config" },
+  { path = '%APPDATA%\Code', kind = "config" },
+  { path = '%LOCALAPPDATA%\Programs\Microsoft VS Code', kind = "app" },
+]
+
+[[app]]
+name = "JetBrains IDE"
+category = "sviluppo"
+detect.names = ["*JetBrains*", "IntelliJ*", "PyCharm*", "WebStorm*", "Rider*", "CLion*", "GoLand*",
+                "DataGrip*", "PhpStorm*", "RubyMine*", "RustRover*", "Fleet*"]
+paths = [
+  { path = '%APPDATA%\JetBrains', kind = "config" },
+  { path = '%LOCALAPPDATA%\JetBrains', kind = "cache" },
+]
+notes = "Contiene le cartelle di tutte le versioni: quelle vecchie si possono spesso eliminare."
+
+[[app]]
+name = "Postman"
+category = "sviluppo"
+detect.names = ["Postman*"]
+paths = [
+  { path = '%APPDATA%\Postman', kind = "config" },
+  { path = '%LOCALAPPDATA%\Postman', kind = "app" },
+]
+
+[[app]]
+name = "Unity"
+category = "sviluppo"
+detect.names = ["Unity*"]
+paths = [
+  { path = '%APPDATA%\UnityHub', kind = "config" },
+  { path = '%LOCALAPPDATA%\Unity', kind = "cache" },
+]
+
+[[app]]
+name = "VirtualBox"
+category = "sviluppo"
+detect.names = ["Oracle VirtualBox*", "Oracle VM VirtualBox*"]
+detect.exe = ["VBoxManage"]
+paths = [
+  { path = '%USERPROFILE%\.VirtualBox', kind = "config" },
+  { path = '%USERPROFILE%\VirtualBox VMs', kind = "data" },
+]
+
+# ============================== Browser ==============================
+
+[[app]]
+name = "Google (Chrome e altre app)"
+category = "browser"
+detect.names = ["Google *"]
+paths = [ { path = '%LOCALAPPDATA%\Google', kind = "data" } ]
+notes = "Contiene profili del browser (preferiti, password): non cancellare senza backup."
+
+[[app]]
+name = "Mozilla Firefox / Thunderbird"
+category = "browser"
+detect.names = ["Mozilla Firefox*", "Mozilla Thunderbird*", "Firefox*"]
+paths = [
+  { path = '%APPDATA%\Mozilla', kind = "data" },
+  { path = '%LOCALAPPDATA%\Mozilla', kind = "cache" },
+  { path = '%APPDATA%\Thunderbird', kind = "data" },
+]
+
+[[app]]
+name = "Brave"
+category = "browser"
+detect.names = ["Brave*"]
+paths = [ { path = '%LOCALAPPDATA%\BraveSoftware', kind = "data" } ]
+
+[[app]]
+name = "Opera"
+category = "browser"
+detect.names = ["Opera*"]
+paths = [
+  { path = '%APPDATA%\Opera Software', kind = "data" },
+  { path = '%LOCALAPPDATA%\Opera Software', kind = "cache" },
+]
+
+[[app]]
+name = "Vivaldi"
+category = "browser"
+detect.names = ["Vivaldi*"]
+paths = [ { path = '%LOCALAPPDATA%\Vivaldi', kind = "data" } ]
+
+# ============================== Comunicazione ==============================
+
+[[app]]
+name = "Discord"
+category = "comunicazione"
+detect.names = ["Discord*"]
+paths = [
+  { path = '%APPDATA%\discord', kind = "cache" },
+  { path = '%LOCALAPPDATA%\Discord', kind = "app" },
+]
+
+[[app]]
+name = "Slack"
+category = "comunicazione"
+detect.names = ["Slack*", "*SlackTechnologies*"]
+paths = [
+  { path = '%APPDATA%\Slack', kind = "cache" },
+  { path = '%LOCALAPPDATA%\slack', kind = "app" },
+]
+
+[[app]]
+name = "Zoom"
+category = "comunicazione"
+detect.names = ["Zoom*"]
+paths = [ { path = '%APPDATA%\Zoom', kind = "app" } ]
+
+[[app]]
+name = "Telegram"
+category = "comunicazione"
+detect.names = ["Telegram*", "*TelegramDesktop*"]
+paths = [ { path = '%APPDATA%\Telegram Desktop', kind = "data" } ]
+
+[[app]]
+name = "Spotify"
+category = "multimedia"
+detect.names = ["Spotify*", "*SpotifyMusic*"]
+paths = [
+  { path = '%APPDATA%\Spotify', kind = "app" },
+  { path = '%LOCALAPPDATA%\Spotify', kind = "cache" },
+]
+
+# ============================== Giochi ==============================
+
+[[app]]
+name = "Steam"
+category = "giochi"
+detect.names = ["Steam"]
+paths = [ { path = '%ProgramFiles(x86)%\Steam', kind = "data" } ]
+notes = "Contiene i giochi installati e i salvataggi locali."
+
+[[app]]
+name = "Epic Games Launcher"
+category = "giochi"
+detect.names = ["Epic Games Launcher*"]
+paths = [
+  { path = '%LOCALAPPDATA%\EpicGamesLauncher', kind = "cache" },
+  { path = '%ProgramFiles%\Epic Games', kind = "data" },
+  { path = '%ProgramData%\Epic', kind = "config" },
+]
+
+[[app]]
+name = "GOG Galaxy"
+category = "giochi"
+detect.names = ["GOG GALAXY*", "GOG Galaxy*"]
+paths = [
+  { path = '%ProgramFiles(x86)%\GOG Galaxy', kind = "app" },
+  { path = '%LOCALAPPDATA%\GOG.com', kind = "cache" },
+  { path = '%ProgramData%\GOG.com', kind = "cache" },
+]
+
+[[app]]
+name = "EA app"
+category = "giochi"
+detect.names = ["EA app*", "EA Desktop*", "Origin"]
+paths = [
+  { path = '%LOCALAPPDATA%\Electronic Arts', kind = "cache" },
+  { path = '%ProgramData%\EA Desktop', kind = "cache" },
+  { path = '%ProgramData%\Origin', kind = "cache" },
+  { path = '%APPDATA%\Origin', kind = "config" },
+]
+
+[[app]]
+name = "Ubisoft Connect"
+category = "giochi"
+detect.names = ["Ubisoft Connect*", "Uplay*"]
+paths = [ { path = '%ProgramFiles(x86)%\Ubisoft', kind = "data" } ]
+
+[[app]]
+name = "Battle.net"
+category = "giochi"
+detect.names = ["Battle.net*"]
+paths = [
+  { path = '%ProgramData%\Battle.net', kind = "cache" },
+  { path = '%APPDATA%\Battle.net', kind = "config" },
+]
+
+# ============================== Multimedia e grafica ==============================
+
+[[app]]
+name = "Adobe (Acrobat, Creative Cloud, Flash)"
+category = "multimedia"
+detect.names = ["Adobe*"]
+paths = [ { path = '%USERPROFILE%\AppData\LocalLow\Adobe', kind = "cache" } ]
+
+[[app]]
+name = "PhotoSì"
+category = "multimedia"
+detect.names = ["PhotoSi*", "PhotoSì*"]
+paths = [ { path = '%APPDATA%\PhotoSi', kind = "data" } ]
+notes = "Può contenere progetti di stampa non ancora ordinati."
+
+[[app]]
+name = "OBS Studio"
+category = "multimedia"
+detect.names = ["OBS Studio*"]
+paths = [ { path = '%APPDATA%\obs-studio', kind = "config" } ]
+
+[[app]]
+name = "VLC"
+category = "multimedia"
+detect.names = ["VLC*"]
+paths = [ { path = '%APPDATA%\vlc', kind = "config" } ]
+
+[[app]]
+name = "GIMP"
+category = "multimedia"
+detect.names = ["GIMP*"]
+paths = [ { path = '%APPDATA%\GIMP', kind = "config" } ]
+
+[[app]]
+name = "Blender"
+category = "multimedia"
+detect.names = ["Blender*"]
+paths = [ { path = '%APPDATA%\Blender Foundation', kind = "config" } ]
+
+[[app]]
+name = "Audacity"
+category = "multimedia"
+detect.names = ["Audacity*"]
+paths = [ { path = '%APPDATA%\audacity', kind = "config" } ]
+
+[[app]]
+name = "HandBrake"
+category = "multimedia"
+detect.names = ["HandBrake*"]
+paths = [ { path = '%APPDATA%\HandBrake', kind = "config" } ]
+
+[[app]]
+name = "Krita"
+category = "multimedia"
+detect.names = ["Krita*"]
+paths = [
+  { path = '%APPDATA%\krita', kind = "config" },
+  { path = '%LOCALAPPDATA%\krita', kind = "cache" },
+]
+
+[[app]]
+name = "Adobe"
+category = "multimedia"
+detect.names = ["Adobe *"]
+paths = [
+  { path = '%APPDATA%\Adobe', kind = "config" },
+  { path = '%LOCALAPPDATA%\Adobe', kind = "cache" },
+  { path = '%ProgramFiles%\Adobe', kind = "app" },
+  { path = '%ProgramData%\Adobe', kind = "app" },
+]
+
+# ============================== Utilità ==============================
+
+[[app]]
+name = "Microsoft PC Manager"
+category = "utilità"
+detect.names = ["Microsoft PC Manager*", "*MicrosoftPCManager*", "PC Manager*"]
+paths = [ { path = '%LOCALAPPDATA%\PC Manager Store', kind = "cache" } ]
+
+[[app]]
+name = "Winhance"
+category = "utilità"
+detect.names = ["Winhance*"]
+detect.exe = ["winhance"]
+paths = [ { path = '%ProgramData%\Winhance', kind = "data" } ]
+notes = "Anche la versione portabile scrive qui backup e log: contiene i backup delle modifiche a Windows."
+
+[[app]]
+name = "Notepad++"
+category = "utilità"
+detect.names = ["Notepad++*"]
+paths = [ { path = '%APPDATA%\Notepad++', kind = "config" } ]
+
+[[app]]
+name = "Obsidian"
+category = "utilità"
+detect.names = ["Obsidian*"]
+paths = [ { path = '%APPDATA%\obsidian', kind = "config" } ]
+notes = "Le note (vault) stanno in una cartella scelta dall'utente, non qui."
+
+[[app]]
+name = "Zotero"
+category = "utilità"
+detect.names = ["Zotero*"]
+paths = [
+  { path = '%APPDATA%\Zotero', kind = "config" },
+  { path = '%USERPROFILE%\Zotero', kind = "data" },
+]
+
+[[app]]
+name = "Dropbox"
+category = "utilità"
+detect.names = ["Dropbox*"]
+paths = [
+  { path = '%LOCALAPPDATA%\Dropbox', kind = "app" },
+  { path = '%ProgramData%\Dropbox', kind = "app" },
+]
+
+[[app]]
+name = "NVIDIA"
+category = "driver"
+detect.names = ["NVIDIA *"]
+paths = [
+  { path = '%LOCALAPPDATA%\NVIDIA', kind = "cache" },
+  { path = '%LOCALAPPDATA%\NVIDIA Corporation', kind = "cache" },
+  { path = '%ProgramData%\NVIDIA', kind = "cache" },
+  { path = '%ProgramData%\NVIDIA Corporation', kind = "app" },
+  { path = '%ProgramFiles%\NVIDIA Corporation', kind = "app" },
+]
