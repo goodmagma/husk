@@ -104,6 +104,32 @@ GOOS=linux go vet ./dictionary ./internal/... ./cmd/husk
 GOOS=darwin go vet ./dictionary ./internal/... ./cmd/husk
 ```
 
+## Release
+
+GitHub Actions (`.github/workflows`):
+
+- `ci.yml`: on every push to `main` and pull request, `gofmt`, `go vet`, `go test` and build on Windows, Linux, macOS.
+- `release.yml`: on a `v*` tag, builds and publishes a GitHub release:
+  - `husk_<version>_<os>_<arch>`: CLI for Windows, Linux and macOS (amd64, arm64);
+  - `husk-gui_<version>_<os>_<arch>`: GUI packaged with `fyne package` (Windows `.exe` with icon,
+    Linux `.tar.xz` with desktop entry, macOS `.app`), Windows amd64, Linux amd64/arm64, macOS amd64/arm64;
+  - `SHA256SUMS.txt`.
+
+  The version comes from the tag. A manual run (Actions → Release → Run workflow) builds the packages
+  without publishing them.
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Local GUI package (the output is `cmd/husk-gui/Husk.exe`; `fyne package` also bumps `Build` in `FyneApp.toml`):
+
+```bash
+go install fyne.io/tools/cmd/fyne@v1.7.2
+fyne package --os windows --src cmd/husk-gui --release
+```
+
 ## Disclaimer
 
 This software is provided "as is", without warranty of any kind, express or implied. Use it at your own

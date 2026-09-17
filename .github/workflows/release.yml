@@ -1,0 +1,158 @@
+name: Release
+
+# A tag like v0.1.0 builds every package and publishes a GitHub release.
+# A manual run builds the packages only (downloadable from the run page).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FYNE_TOOL: fyne.io/tools/cmd/fyne@v1.7.2
+
+jobs:
+  cli:
+    name: CLI (all systems)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Version
+        run: echo "VERSION=$(bash .github/scripts/version.sh)" >> "$GITHUB_ENV"
+
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p out
+          for target in windows/amd64 windows/arm64 linux/amd64 linux/arm64 darwin/amd64 darwin/arm64; do
+            os="${target%/*}"; arch="${target#*/}"
+            name="husk_${VERSION}_${os/darwin/macos}_${arch}"
+            exe="husk"; [ "$os" = windows ] && exe="husk.exe"
+            mkdir -p "build/$name"
+            GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "build/$name/$exe" ./cmd/husk
+            cp README.md "build/$name/"
+            if [ "$os" = windows ]; then
+              (cd build && zip -qr "../out/$name.zip" "$name")
+            else
+              tar -czf "out/$name.tar.gz" -C build "$name"
+            fi
+          done
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli
+          path: out/*
+
+  gui:
+    name: GUI (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows_amd64
+            runner: windows-latest
+            os: windows
+          - name: linux_amd64
+            runner: ubuntu-latest
+            os: linux
+          - name: linux_arm64
+            runner: ubuntu-24.04-arm
+            os: linux
+          - name: macos_arm64
+            runner: macos-latest
+            os: darwin
+          - name: macos_amd64
+            runner: macos-latest
+            os: darwin
+            goarch: amd64 # cross-compiled on Apple silicon
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install GUI dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+
+      - name: Install C compiler (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command gcc -ErrorAction SilentlyContinue)) {
+            choco install mingw -y --no-progress
+            "C:\ProgramData\mingw64\mingw64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          }
+
+      - name: Install fyne tool
+        run: go install "$FYNE_TOOL"
+
+      - name: Version
+        run: echo "VERSION=$(bash .github/scripts/version.sh)" >> "$GITHUB_ENV"
+
+      - name: Package
+        env:
+          CGO_ENABLED: "1"
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          [ -n "$GOARCH" ] || unset GOARCH
+          fyne package --os "${{ matrix.os }}" --src cmd/husk-gui --release --app-version "${VERSION%%-*}"
+          mkdir -p out
+          name="husk-gui_${VERSION}_${{ matrix.name }}"
+          case "${{ matrix.os }}" in
+            windows)
+              mkdir -p "build/$name"
+              mv cmd/husk-gui/Husk.exe "build/$name/husk-gui.exe"
+              cp README.md "build/$name/"
+              (cd build && 7z a -tzip "../out/$name.zip" "$name" > /dev/null)
+              ;;
+            linux)
+              mv "$(find . -maxdepth 3 -name 'Husk.tar.xz' | head -1)" "out/$name.tar.xz"
+              ;;
+            darwin)
+              app="$(find . -maxdepth 3 -name 'Husk.app' -type d | head -1)"
+              ditto -c -k --keepParent "$app" "out/$name.zip"
+              ;;
+          esac
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gui-${{ matrix.name }}
+          path: out/*
+
+  publish:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [cli, gui]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Checksums
+        run: cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
