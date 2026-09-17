@@ -7,6 +7,10 @@ Windows, Linux, macOS. Two executables: `husk` (CLI) and `husk-gui` (Fyne). Vers
 
 ![husk-gui](docs/images/husk-gui.png)
 
+> **Disclaimer:** use at your own risk. Husk only reports what it finds, and its results can be wrong:
+> always check a folder before deleting it. The authors accept no responsibility for any loss of data
+> or damage resulting from the use of this software or of its reports.
+
 ## Requirements
 
 - Go 1.24+
@@ -93,8 +97,15 @@ Report files (`--report`, default folder `husk` in the system temp folder):
 ```bash
 gofmt -l .
 go vet ./...
+go test ./...
 
 # other systems: the GUI needs CGO, so it can only be checked on the target system
 GOOS=linux go vet ./dictionary ./internal/... ./cmd/husk
 GOOS=darwin go vet ./dictionary ./internal/... ./cmd/husk
 ```
+
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind, express or implied. Use it at your own
+risk. The authors are not liable for any claim, damage or data loss arising from its use, including
+the deletion of folders listed in its reports.

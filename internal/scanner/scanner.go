@@ -227,7 +227,13 @@ func Run(ctx context.Context, opt Options, progress Progress) (*Report, error) {
 
 	// 5) PATH variable
 	progress("Checking PATH", 0, 0)
-	rep.PathIssues = CheckPath(platform.PathVariables(), rep.Results)
+	rep.PathIssues = CheckPath(platform.PathVariables(), rep.Results, func(app string) (bool, bool) {
+		e, ok := dict.Entries[strings.ToLower(app)]
+		if !ok {
+			return false, false
+		}
+		return e.Installed, true
+	})
 	rep.Duration = time.Since(rep.Started)
 	return rep, nil
 }

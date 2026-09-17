@@ -129,7 +129,11 @@ Matcher per nome (`Matcher.find`):
 
 Voci del PATH (`check_path_entries()`): legge `Path` di utente (HKCU\Environment) e sistema
 (HKLM\...\Session Manager\Environment) dal registro e segnala le voci duplicate, inesistenti, senza
-eseguibili (valgono PATHEXT, `.dll`, `.ps1`) o dentro una cartella `orfano`. Sezione in fondo al report
+eseguibili (valgono PATHEXT, `.dll`, `.ps1`) o dentro una cartella `orfano`.
+Voci predefinite (`platform.DefaultPathEntries`: `go\bin`, `.dotnet\tools`, `.cargo\bin`, su Unix anche
+`.local/bin`): se mancano ma il programma del dizionario che le aggiunge è installato **non** vengono
+segnalate (la cartella nasce al primo `go install` / `dotnet tool install -g` / `cargo install`); se il
+programma non è installato: "added by X, which is not installed". Test: `internal/scanner/pathcheck_test.go`. Sezione in fondo al report
 HTML, file `husk_path_*.csv`, elenco in console.
 
 Report HTML: filtri per stato, menu "Dimensione minima" (default 100 MB), colonne ordinabili.
@@ -172,7 +176,7 @@ Stati nella versione Go: `orphan`, `suspect`, `portable`, `shared`, `associated`
 Ultimo report (17/09/2026, Go e PoC uguali): 59 probabili orfani (4,8 GB) e 19 cache condivise (4,5 GB);
 file di suggerimenti con 4 voci (le cartelle vuote di origine ignota).
 PATH utente da sistemare: `Local\Goose\bin` (Goose disinstallato), `Local\Programs\Ollama` (vuota);
-`%USERPROFILE%\.dotnet\tools` e `%USERPROFILE%\go\bin` inesistenti sono normali (SDK .NET, installer Go).
+`%USERPROFILE%\.dotnet\tools` e `%USERPROFILE%\go\bin` mancano ma non sono segnalate (SDK .NET e Go installati).
 
 ## Prossimi passi
 
@@ -180,7 +184,8 @@ Fatti: rinomina in Husk, repository https://github.com/goodmagma/husk (branch `m
 revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
 
 1. Provare `husk-gui` con l'utente.
-2. Test automatici (`go test`): matcher, dizionario (unione delle voci), pathutil, classificazione.
+2. Test automatici (`go test ./...`): c'è solo `CheckPath`; mancano matcher, dizionario (unione delle voci),
+   pathutil, classificazione.
 3. Provare Linux e macOS (macchine reali o CI) e ampliare `linux.toml` e `darwin.toml`.
 4. GitHub Actions: build per i tre sistemi (la GUI va compilata sul sistema di destinazione), release.
 5. Supporto ai **residui come file singoli** (es. `%USERPROFILE%\.aider.conf.yml`, `.plist` su macOS).

@@ -323,16 +323,11 @@ func OpenURL(target string) error {
 	return cmd.Start()
 }
 
-// PathNote explains PATH entries that are known to be missing on a normal system.
-func PathNote(expanded string) string {
-	k := pathutil.Key(expanded)
-	switch {
-	case strings.HasSuffix(k, `\.dotnet\tools`):
-		return "added by the .NET SDK: expected if no global tools are installed (dotnet tool install -g)"
-	case strings.HasSuffix(k, `\go\bin`):
-		return "added by the Go installer: expected if no tools are installed (go install)"
-	}
-	return ""
+// DefaultPathEntries lists PATH entries that installers add before the folder exists.
+var DefaultPathEntries = []DefaultPathEntry{
+	{`\go\bin`, "Go", "go install"},
+	{`\.dotnet\tools`, ".NET SDK", "dotnet tool install -g"},
+	{`\.cargo\bin`, "Rust", "cargo install"},
 }
 
 func hideWindow(cmd *exec.Cmd) {

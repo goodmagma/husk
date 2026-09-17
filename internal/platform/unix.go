@@ -63,14 +63,12 @@ func IsReparse(info fs.FileInfo) bool {
 	return info.Mode()&fs.ModeSymlink != 0
 }
 
-// PathNote explains PATH entries that are known to be missing on a normal system.
-func PathNote(expanded string) string {
-	for _, suffix := range []string{"/.dotnet/tools", "/.local/bin", "/go/bin", "/.cargo/bin"} {
-		if strings.HasSuffix(expanded, suffix) {
-			return "default per-user tools folder: expected if no tools are installed"
-		}
-	}
-	return ""
+// DefaultPathEntries lists PATH entries that installers or shell profiles add before the folder exists.
+var DefaultPathEntries = []DefaultPathEntry{
+	{"/go/bin", "Go", "go install"},
+	{"/.dotnet/tools", ".NET SDK", "dotnet tool install -g"},
+	{"/.cargo/bin", "Rust", "cargo install"},
+	{"/.local/bin", "", ""}, // added by many shell profiles
 }
 
 func hideWindow(*exec.Cmd) {}
