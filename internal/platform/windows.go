@@ -323,13 +323,6 @@ func OpenURL(target string) error {
 	return cmd.Start()
 }
 
-// DefaultPathEntries lists PATH entries that installers add before the folder exists.
-var DefaultPathEntries = []DefaultPathEntry{
-	{`\go\bin`, "Go", "go install"},
-	{`\.dotnet\tools`, ".NET SDK", "dotnet tool install -g"},
-	{`\.cargo\bin`, "Rust", "cargo install"},
-}
-
 func hideWindow(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NO_WINDOW}
 }

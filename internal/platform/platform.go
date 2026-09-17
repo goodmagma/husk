@@ -35,25 +35,6 @@ type PathVar struct {
 	Entry string
 }
 
-// DefaultPathEntry is a PATH entry added by a program before its folder exists
-// (the folder is created when the first tool is installed).
-type DefaultPathEntry struct {
-	Suffix  string // end of the expanded path, with the system separator
-	App     string // dictionary entry of the program that adds it; "" if always expected
-	Install string // command that creates the folder
-}
-
-// MatchDefaultPathEntry returns the default entry the expanded path ends with, if any.
-func MatchDefaultPathEntry(expanded string) (DefaultPathEntry, bool) {
-	k := pathutil.Key(expanded)
-	for _, d := range DefaultPathEntries {
-		if strings.HasSuffix(k, pathutil.Key(d.Suffix)) {
-			return d, true
-		}
-	}
-	return DefaultPathEntry{}, false
-}
-
 // notAppExe excludes installers, uninstallers and updaters from "portable" executables.
 var notAppExe = regexp.MustCompile(`(?i)^(unins|uninstall|setup|install|update|vc_?redist|dotnet)`)
 

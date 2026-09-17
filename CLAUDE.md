@@ -62,6 +62,8 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 | `internal/version` | versione del programma (0.1.0), da allineare con `cmd/husk-gui/FyneApp.toml`; sovrascrivibile con `-ldflags -X .../internal/version.Version=...` |
 | `assets/` | `icon.svg` (logo: cartella vuota con lente su quadrato arancione; icona della finestra via `go:embed`, logo del README), `icon.png` 256 px per `fyne package` (`FyneApp.toml`). Il renderer SVG di Fyne ignora `rx` sui `rect` e non scala bene gli spessori: disegnare con `path` e rigenerare il PNG con `go run ./tools/svg2png assets/icon.svg assets/icon.png 256` |
 | `tools/svg2png` | converte l'SVG in PNG (disegna a 256 px e ridimensiona) |
+| `.github/workflows/` | `ci.yml` (gofmt, vet, test, build sui 3 sistemi), `release.yml` (tag `v*`: CLI per 6 target senza CGO, GUI con `fyne package` su runner nativi, macOS amd64 cross su Apple silicon, pubblicazione con `softprops/action-gh-release`; avvio manuale = solo artefatti) |
+| `.github/scripts/version.sh` | versione dal tag (`v1.2.3` → `1.2.3`, manuale → `<versione>-dev.<commit>`), scritta in `internal/version/version.go` solo nel runner |
 | `docs/images/` | immagini del README (`husk-gui.png`: screenshot della GUI, nome utente oscurato) |
 | `internal/report` | HTML (`template.html` incorporato), CSV, suggerimenti; `text.go`: report testuale (`WriteText`) usato da CLI e registro della GUI |
 | `poc/` | PoC Python: `husk.py`, `ignore.txt`, `apps.user.toml`; solo locale, escluso dal repository (`.gitignore`) |
@@ -130,10 +132,13 @@ Matcher per nome (`Matcher.find`):
 Voci del PATH (`check_path_entries()`): legge `Path` di utente (HKCU\Environment) e sistema
 (HKLM\...\Session Manager\Environment) dal registro e segnala le voci duplicate, inesistenti, senza
 eseguibili (valgono PATHEXT, `.dll`, `.ps1`) o dentro una cartella `orfano`.
-Voci predefinite (`platform.DefaultPathEntries`: `go\bin`, `.dotnet\tools`, `.cargo\bin`, su Unix anche
-`.local/bin`): se mancano ma il programma del dizionario che le aggiunge è installato **non** vengono
-segnalate (la cartella nasce al primo `go install` / `dotnet tool install -g` / `cargo install`); se il
-programma non è installato: "added by X, which is not installed". Test: `internal/scanner/pathcheck_test.go`. Sezione in fondo al report
+Nessun elenco fisso nel codice (decisione dell'utente, 17/09/2026): una voce mancante o senza eseguibili
+che sta dentro le `paths` di una voce del dizionario (`Dictionary.Owner`, confronto per componenti con
+caratteri jolly, vince la voce più specifica) **non** viene segnalata se il programma è installato o la voce
+è `[[shared]]` (es. `%USERPROFILE%\go` copre `go\bin`, che nasce al primo `go install`); se il programma non è
+installato: "belongs to X, which is not installed". `~/.local/bin` (e `%USERPROFILE%\.local\bin`) è una
+voce `[[shared]]` "User executables"; .NET SDK aggiunto anche a linux/darwin.toml.
+Test: `internal/scanner/pathcheck_test.go` (`CheckPath`, `Dictionary.Owner`). Sezione in fondo al report
 HTML, file `husk_path_*.csv`, elenco in console.
 
 Report HTML: filtri per stato, menu "Dimensione minima" (default 100 MB), colonne ordinabili.
@@ -177,6 +182,7 @@ Ultimo report (17/09/2026, Go e PoC uguali): 59 probabili orfani (4,8 GB) e 19 c
 file di suggerimenti con 4 voci (le cartelle vuote di origine ignota).
 PATH utente da sistemare: `Local\Goose\bin` (Goose disinstallato), `Local\Programs\Ollama` (vuota);
 `%USERPROFILE%\.dotnet\tools` e `%USERPROFILE%\go\bin` mancano ma non sono segnalate (SDK .NET e Go installati).
+Dopo che l'utente ha pulito il PATH (17/09/2026): 0 voci da rivedere; `.local\bin` compare tra le cache condivise.
 
 ## Prossimi passi
 
@@ -184,10 +190,14 @@ Fatti: rinomina in Husk, repository https://github.com/goodmagma/husk (branch `m
 revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
 
 1. Provare `husk-gui` con l'utente.
-2. Test automatici (`go test ./...`): c'è solo `CheckPath`; mancano matcher, dizionario (unione delle voci),
+2. Test automatici (`go test ./...`): ci sono solo `CheckPath` e `Dictionary.Owner`; mancano matcher, dizionario (unione delle voci),
    pathutil, classificazione.
 3. Provare Linux e macOS (macchine reali o CI) e ampliare `linux.toml` e `darwin.toml`.
-4. GitHub Actions: build per i tre sistemi (la GUI va compilata sul sistema di destinazione), release.
+4. Pipeline GitHub Actions scritte (17/09/2026) ma non ancora eseguite: provare con avvio manuale di
+   Release, poi tag `v0.1.0`. Punti incerti: gcc sul runner Windows (fallback `choco install mingw`),
+   GUI macOS amd64 compilata da Apple silicon, nome/posizione di `Husk.tar.xz` su Linux.
+   `fyne package` (fyne.io/tools v1.7.2) non accetta `-ldflags`, crea `cmd/husk-gui/Husk.exe` e
+   incrementa `Build` in `FyneApp.toml` (in locale annullare la modifica).
 5. Supporto ai **residui come file singoli** (es. `%USERPROFILE%\.aider.conf.yml`, `.plist` su macOS).
 6. Nuove fonti di programmi installati: winget, Scoop, Chocolatey.
 7. Dopo la prima release: tabella dei risultati dentro la GUI, eventuali grafici.

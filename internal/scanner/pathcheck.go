@@ -9,12 +9,19 @@ import (
 	"github.com/goodmagma/husk/internal/platform"
 )
 
+// Owner describes the dictionary entry whose folders contain a path.
+type Owner struct {
+	Name      string
+	Shared    bool
+	Installed bool
+}
+
 // CheckPath reports PATH entries that are duplicated, missing, without executables
-// or inside an orphan folder. installed reports whether a dictionary entry is installed
-// (known is false if the dictionary has no such entry): missing default folders of
-// installed programs, such as %USERPROFILE%\go\bin, are not reported.
+// or inside an orphan folder. owner finds the dictionary entry a path belongs to:
+// a missing or empty entry inside the folders of an installed program or of a shared
+// cache (e.g. %USERPROFILE%\go\bin with Go installed) is expected and not reported.
 func CheckPath(vars []platform.PathVar, results []model.Result,
-	installed func(app string) (ok, known bool)) []model.PathIssue {
+	owner func(path string) (Owner, bool)) []model.PathIssue {
 	orphans := map[string]model.Result{}
 	for _, r := range results {
 		if r.Status == model.Orphan {
@@ -37,25 +44,13 @@ func CheckPath(vars []platform.PathVar, results []model.Result,
 			issue.Problem, issue.Details = "duplicate", "already in the "+seen[k]+" PATH"
 		case err != nil || !st.IsDir():
 			issue.Problem = "missing folder"
-			if def, ok := platform.MatchDefaultPathEntry(full); ok {
-				inst, known := false, false
-				if def.App != "" {
-					inst, known = installed(def.App)
-				}
-				switch {
-				case def.App == "" || inst:
-					issue.Problem = "" // expected: created by the first `install`
-				case known:
-					issue.Details = "added by " + def.App + ", which is not installed"
-				default:
-					issue.Details = "default folder of " + def.App + " (created by " + def.Install + ")"
-				}
-			}
+			explainOwner(&issue, full, owner)
 		case !platform.HasPrograms(full):
 			issue.Problem = "no executables"
 			if entries, _ := os.ReadDir(full); len(entries) == 0 {
 				issue.Details = "empty folder"
 			}
+			explainOwner(&issue, full, owner)
 		default:
 			for parent := k; parent != ""; parent = pathutil.Parent(parent) {
 				if r, ok := orphans[parent]; ok {
@@ -77,4 +72,24 @@ func CheckPath(vars []platform.PathVar, results []model.Result,
 		}
 	}
 	return issues
+}
+
+// explainOwner clears the issue when the folder belongs to an installed program or a shared
+// cache (tools folders are created later, e.g. by "go install"), and names the program otherwise.
+func explainOwner(issue *model.PathIssue, path string, owner func(string) (Owner, bool)) {
+	o, ok := owner(path)
+	switch {
+	case !ok:
+	case o.Shared || o.Installed:
+		issue.Problem = ""
+	default:
+		issue.Details = joinDetails(issue.Details, "belongs to "+o.Name+", which is not installed")
+	}
+}
+
+func joinDetails(a, b string) string {
+	if a == "" {
+		return b
+	}
+	return a + "; " + b
 }

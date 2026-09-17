@@ -347,6 +347,12 @@ paths = [
 ]
 used_by = "programs built with the Fyne toolkit (Husk included): one subfolder per application ID"
 
+[[shared]]
+name = "User executables"
+path = '%USERPROFILE%\.local\bin'
+kind = "app"
+used_by = "command-line tools installed per user (uv, pipx, Claude Code, ...)"
+
 # ============================== Development ==============================
 
 [[app]]

@@ -63,14 +63,6 @@ func IsReparse(info fs.FileInfo) bool {
 	return info.Mode()&fs.ModeSymlink != 0
 }
 
-// DefaultPathEntries lists PATH entries that installers or shell profiles add before the folder exists.
-var DefaultPathEntries = []DefaultPathEntry{
-	{"/go/bin", "Go", "go install"},
-	{"/.dotnet/tools", ".NET SDK", "dotnet tool install -g"},
-	{"/.cargo/bin", "Rust", "cargo install"},
-	{"/.local/bin", "", ""}, // added by many shell profiles
-}
-
 func hideWindow(*exec.Cmd) {}
 
 // readUnixProcesses reads the full process paths with ps.

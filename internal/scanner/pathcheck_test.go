@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/goodmagma/husk/dictionary"
 	"github.com/goodmagma/husk/internal/model"
 	"github.com/goodmagma/husk/internal/platform"
 )
@@ -23,46 +24,73 @@ func TestCheckPath(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		exe = "tool.exe"
 	}
-	withTool := mkdir("tools")
-	if err := os.WriteFile(filepath.Join(withTool, exe), []byte("x"), 0o755); err != nil {
-		t.Fatal(err)
+	addTool := func(dir string) {
+		if err := os.WriteFile(filepath.Join(dir, exe), []byte("x"), 0o755); err != nil {
+			t.Fatal(err)
+		}
 	}
+	withTool := mkdir("tools")
+	addTool(withTool)
 	empty := mkdir("empty")
 	orphan := mkdir("Leftover")
 	orphanBin := mkdir("Leftover", "bin")
-	if err := os.WriteFile(filepath.Join(orphanBin, exe), []byte("x"), 0o755); err != nil {
-		t.Fatal(err)
+	addTool(orphanBin)
+	emptyGoBin := mkdir("go", "pkg")
+
+	// dictionary with an installed program, a missing one and a shared folder
+	d := dictionary.New()
+	d.Load("test.toml", []byte(`
+[[app]]
+name = "Go"
+detect.exe = ["go"]
+paths = [ '`+filepath.Join(tmp, "go")+`' ]
+
+[[app]]
+name = ".NET SDK"
+detect.exe = ["dotnet"]
+paths = [ '`+filepath.Join(tmp, ".dot*")+`' ]
+
+[[shared]]
+name = "User executables"
+path = '`+filepath.Join(tmp, ".local", "bin")+`'
+`), "test")
+	if len(d.Errors) > 0 {
+		t.Fatal(d.Errors)
+	}
+	d.Detect(nil, map[string]bool{"go": true})
+	owner := func(p string) (Owner, bool) {
+		e, ok := d.Owner(p)
+		if !ok {
+			return Owner{}, false
+		}
+		return Owner{Name: e.Name, Shared: e.Shared, Installed: e.Installed}, true
 	}
 
-	installed := map[string]bool{"Go": true, ".NET SDK": false}
-	lookup := func(app string) (bool, bool) {
-		ok, known := installed[app]
-		return ok, known
-	}
 	vars := []platform.PathVar{
 		{Scope: "user", Entry: withTool},
 		{Scope: "system", Entry: withTool},                             // duplicate
-		{Scope: "user", Entry: empty},                                  // no executables
-		{Scope: "user", Entry: filepath.Join(tmp, "missing")},          // missing
-		{Scope: "user", Entry: filepath.Join(tmp, "go", "bin")},        // default, Go installed
-		{Scope: "user", Entry: filepath.Join(tmp, ".dotnet", "tools")}, // default, .NET not installed
-		{Scope: "user", Entry: filepath.Join(tmp, ".cargo", "bin")},    // default, Rust unknown
+		{Scope: "user", Entry: empty},                                  // no executables, no owner
+		{Scope: "user", Entry: filepath.Join(tmp, "missing")},          // missing, no owner
+		{Scope: "user", Entry: filepath.Join(tmp, "go", "bin")},        // missing, Go installed
+		{Scope: "user", Entry: emptyGoBin},                             // empty, Go installed
+		{Scope: "user", Entry: filepath.Join(tmp, ".dotnet", "tools")}, // missing, .NET not installed
+		{Scope: "user", Entry: filepath.Join(tmp, ".local", "bin")},    // missing, shared folder
 		{Scope: "user", Entry: orphanBin},                              // inside an orphan folder
 		{Scope: "user", Entry: "  "},                                   // blank
 	}
 	results := []model.Result{{Path: orphan, Status: model.Orphan, Match: "Leftover: not detected as installed"}}
 
 	got := map[string]model.PathIssue{}
-	for _, i := range CheckPath(vars, results, lookup) {
+	for _, i := range CheckPath(vars, results, owner) {
 		got[i.Scope+" "+filepath.Base(filepath.Dir(i.Expanded))+"/"+filepath.Base(i.Expanded)] = i
 	}
+	base := filepath.Base(tmp)
 	want := map[string]string{
-		"system " + filepath.Base(tmp) + "/tools": "duplicate",
-		"user " + filepath.Base(tmp) + "/empty":   "no executables",
-		"user " + filepath.Base(tmp) + "/missing": "missing folder",
-		"user .dotnet/tools":                      "missing folder",
-		"user .cargo/bin":                         "missing folder",
-		"user Leftover/bin":                       "inside an orphan folder",
+		"system " + base + "/tools": "duplicate",
+		"user " + base + "/empty":   "no executables",
+		"user " + base + "/missing": "missing folder",
+		"user .dotnet/tools":        "missing folder",
+		"user Leftover/bin":         "inside an orphan folder",
 	}
 	for k, problem := range want {
 		if got[k].Problem != problem {
@@ -72,10 +100,37 @@ func TestCheckPath(t *testing.T) {
 	if len(got) != len(want) {
 		t.Errorf("got %d issues, want %d: %v", len(got), len(want), got)
 	}
-	if d := got["user .dotnet/tools"].Details; d != "added by .NET SDK, which is not installed" {
+	if d := got["user .dotnet/tools"].Details; d != "belongs to .NET SDK, which is not installed" {
 		t.Errorf(".dotnet details: %q", d)
 	}
-	if d := got["user .cargo/bin"].Details; d != "default folder of Rust (created by cargo install)" {
-		t.Errorf(".cargo details: %q", d)
+}
+
+func TestDictionaryOwner(t *testing.T) {
+	d := dictionary.New()
+	root := filepath.Join(t.TempDir(), "Home")
+	d.Load("test.toml", []byte(`
+[[app]]
+name = "Parent"
+paths = [ '`+root+`' ]
+
+[[app]]
+name = "Child"
+paths = [ '`+filepath.Join(root, "Tool*")+`' ]
+`), "test")
+	cases := map[string]string{
+		filepath.Join(root, "ToolBox", "bin"):  "Child",  // most specific pattern wins
+		filepath.Join(root, "other"):           "Parent", // ancestor
+		root:                                   "Parent", // the folder itself
+		filepath.Join(filepath.Dir(root), "x"): "",       // outside
+	}
+	for p, want := range cases {
+		e, ok := d.Owner(p)
+		got := ""
+		if ok {
+			got = e.Name
+		}
+		if got != want {
+			t.Errorf("Owner(%s) = %q, want %q", p, got, want)
+		}
 	}
 }

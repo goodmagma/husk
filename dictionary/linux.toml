@@ -97,6 +97,12 @@ paths = [
 ]
 used_by = "programs built with the Fyne toolkit (Husk included): one subfolder per application ID"
 
+[[shared]]
+name = "User executables"
+path = '~/.local/bin'
+kind = "app"
+used_by = "command-line tools installed per user (pip, pipx, uv, Claude Code, ...); many shell profiles add it to PATH"
+
 # ============================== Development ==============================
 
 [[app]]
@@ -127,6 +133,17 @@ paths = [
   { path = '~/.cargo', kind = "app" },
   { path = '~/.rustup', kind = "app" },
 ]
+
+[[app]]
+name = ".NET SDK"
+category = "development"
+detect.names = ["dotnet*", "Microsoft .NET SDK*"]
+detect.exe = ["dotnet"]
+paths = [
+  { path = '~/.dotnet', kind = "app" },
+  { path = '~/.nuget', kind = "cache" },
+]
+clean = "dotnet nuget locals all --clear"
 
 [[app]]
 name = "Go"

@@ -296,6 +296,36 @@ func (d *Dictionary) ResolvePaths() map[string]Resolved {
 	return out
 }
 
+// Owner returns the entry whose folders contain p (p itself or one of its ancestors),
+// whether or not the folder exists. When several entries match, the most specific wins.
+func (d *Dictionary) Owner(p string) (*Entry, bool) {
+	sep := string(filepath.Separator)
+	parts := strings.Split(pathutil.Key(p), sep)
+	var best *Entry
+	bestLen := 0
+	for _, e := range d.List() {
+		for _, ps := range e.Paths {
+			pattern := strings.Split(pathutil.Key(pathutil.Expand(ps.Pattern)), sep)
+			if len(pattern) <= bestLen || len(pattern) > len(parts) {
+				continue
+			}
+			if matchParts(pattern, parts) {
+				best, bestLen = e, len(pattern)
+			}
+		}
+	}
+	return best, best != nil
+}
+
+func matchParts(pattern, parts []string) bool {
+	for i, pat := range pattern {
+		if ok, err := filepath.Match(pat, parts[i]); err != nil || !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // UserDirs returns the folders searched for apps.user.toml and ignore.txt:
 // the executable folder and the user configuration folder (e.g. %APPDATA%\husk).
 func UserDirs() []string {

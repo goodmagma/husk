@@ -227,12 +227,12 @@ func Run(ctx context.Context, opt Options, progress Progress) (*Report, error) {
 
 	// 5) PATH variable
 	progress("Checking PATH", 0, 0)
-	rep.PathIssues = CheckPath(platform.PathVariables(), rep.Results, func(app string) (bool, bool) {
-		e, ok := dict.Entries[strings.ToLower(app)]
+	rep.PathIssues = CheckPath(platform.PathVariables(), rep.Results, func(p string) (Owner, bool) {
+		e, ok := dict.Owner(p)
 		if !ok {
-			return false, false
+			return Owner{}, false
 		}
-		return e.Installed, true
+		return Owner{Name: e.Name, Shared: e.Shared, Installed: e.Installed}, true
 	})
 	rep.Duration = time.Since(rep.Started)
 	return rep, nil
