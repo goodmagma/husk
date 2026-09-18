@@ -99,7 +99,9 @@ Versione attuale **0.1.1** (non ancora rilasciata; 0.1.0 è il tag su `f8e4f36`)
 `internal/version/version.go`, `cmd/husk-gui/FyneApp.toml`, i due `winres.json` e il README.
 
 Fonti per sistema:
-- Windows: registro, menu Start, Store (`Get-AppxPackage`), processi (Toolhelp32), PATH, portabili;
+- Windows: registro, menu Start, Store (`Get-AppxPackage`), processi (Toolhelp32), **driver** (0.1.1:
+  `HKLM\SYSTEM\CurrentControlSet\Control\Class\*\*`, `ProviderName` come editore, `DriverDesc` solo
+  corrispondenza esatta; ~160 voci), PATH, portabili;
 - Linux: dpkg, rpm, pacman, Flatpak, Snap, file `.desktop`, `/proc/*/exe`, PATH, portabili in `/opt`
   e `~/.local/opt`; nel profilo solo cartelle "dot"; anche `~/.var/app` (dati Flatpak);
 - macOS: bundle `.app` (nome e `CFBundleIdentifier`), `pkgutil --pkgs`, Homebrew, `ps`, PATH;
@@ -186,7 +188,10 @@ Veri orfani confermati dall'utente o da controlli:
 - rivisti il 17/09 e aggiunti al dizionario: Ollama, PhotoGenie X (con `Roaming\@iplabs`),
   `Program Files\PhotoSi`, Zed, Mullvad, Bun, OpenWork, S3 Browser, Qodo, Semgrep, browser-use,
   Goose (resta `Local\Goose\bin` nel PATH), Kilo Code (disinstallato il 17/09), Azure CLI (`.azure`, `.ms-ad`);
-- cartelle vuote di origine ignota, lasciate all'euristica: `ProgramData\Goodix`, `Roaming\RtSubscribe`,
+- `ProgramData\Goodix` (driver del lettore di impronte, la cartella viene ricreata): era un falso positivo,
+  dalla 0.1.1 è collegata al driver "Goodix MOC Fingerprint"; la fonte driver collega anche
+  `ProgramData\Waves` (Waves APO) e le cartelle Samsung (Samsung Universal Print Driver);
+- cartelle vuote di origine ignota, lasciate all'euristica: `Roaming\RtSubscribe`,
   `Local\Snowflake`, `.ai` (contiene solo `mcp\mcp.json` vuoto).
 
 Da tenere:

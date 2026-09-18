@@ -94,7 +94,45 @@ func Sources() []Source {
 		{"Start menu", readStartMenu},
 		{"Store", readStoreApps},
 		{"processes", readProcesses},
+		{"drivers", readDrivers},
 	}
+}
+
+// readDrivers reads the installed device drivers: they are not listed under the Uninstall key,
+// but some keep data in ProgramData (e.g. Goodix fingerprint readers).
+func readDrivers() []model.Evidence {
+	const classKey = `SYSTEM\CurrentControlSet\Control\Class`
+	root, err := registry.OpenKey(registry.LOCAL_MACHINE, classKey, registry.READ)
+	if err != nil {
+		return nil
+	}
+	defer root.Close()
+	classes, _ := root.ReadSubKeyNames(-1)
+	seen := map[string]bool{}
+	var out []model.Evidence
+	for _, class := range classes {
+		ck, err := registry.OpenKey(root, class, registry.READ)
+		if err != nil {
+			continue
+		}
+		devices, _ := ck.ReadSubKeyNames(-1)
+		for _, dev := range devices {
+			k, err := registry.OpenKey(ck, dev, registry.QUERY_VALUE)
+			if err != nil {
+				continue // e.g. "Properties", readable only by the system
+			}
+			provider, desc := regString(k, "ProviderName"), regString(k, "DriverDesc")
+			k.Close()
+			if provider == "" || seen[provider+"|"+desc] {
+				continue
+			}
+			seen[provider+"|"+desc] = true
+			// the device name only counts as an exact match: many are generic ("Audio", "Controller")
+			out = append(out, model.Evidence{Name: desc, Source: "driver", Publisher: provider, ExactOnly: true})
+		}
+		ck.Close()
+	}
+	return out
 }
 
 func readRegistry() []model.Evidence {
