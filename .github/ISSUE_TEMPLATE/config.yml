@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing to the dictionary
+    url: https://github.com/goodmagma/husk/blob/main/CONTRIBUTING.md
+    about: The dictionary format and how to open a pull request for a new program.

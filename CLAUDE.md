@@ -67,6 +67,9 @@ Verifica disponibilità del nome Husk (fatta il 17/09/2026):
 | `tools/svg2png` | converte l'SVG in PNG (disegna a 256 px e ridimensiona) |
 | `.github/workflows/` | `ci.yml` (gofmt, vet, test, build sui 3 sistemi), `release.yml` (tag `v*`: CLI per 6 target senza CGO, GUI con `fyne package` su runner nativi, macOS amd64 cross su Apple silicon, pubblicazione con `softprops/action-gh-release`; avvio manuale = solo artefatti) |
 | `.github/scripts/version.sh` | versione dal tag (`v1.2.3` → `1.2.3`, manuale → `<versione>-dev.<commit>`), scritta in `internal/version/version.go` solo nel runner |
+| `CONTRIBUTING.md` | guida per chi aggiunge programmi al dizionario: formato di `[[app]]`/`[[shared]]`, `category`, `kind`, stile dei percorsi, prova locale con `apps.user.toml` |
+| `.github/ISSUE_TEMPLATE/` | `new-program.yml` (modulo "Add a program to the dictionary", etichetta `dictionary`), `config.yml` |
+| `.github/pull_request_template.md` | lista di controlli per PR su dizionario e codice |
 | `docs/images/` | immagini del README (`husk-gui.png`: screenshot della GUI, nome utente oscurato) |
 | `internal/report` | HTML (`template.html` incorporato), CSV, suggerimenti; `text.go`: report testuale (`WriteText`) usato da CLI e registro della GUI |
 | `poc/` | PoC Python: `husk.py`, `ignore.txt`, `apps.user.toml`; solo locale, escluso dal repository (`.gitignore`) |
@@ -159,6 +162,11 @@ caratteri jolly, vince la voce più specifica) **non** viene segnalata se il pro
 è `[[shared]]` (es. `%USERPROFILE%\go` copre `go\bin`, che nasce al primo `go install`); se il programma non è
 installato: "belongs to X, which is not installed". `~/.local/bin` (e `%USERPROFILE%\.local\bin`) è una
 voce `[[shared]]` "User executables"; .NET SDK aggiunto anche a linux/darwin.toml.
+Controllo dei dizionari (0.1.1, `dictionary/dictionary_test.go`, gira in CI): chiavi conosciute, `category`
+e `kind` validi (elenchi nel test e in CONTRIBUTING.md: aggiornarli insieme), `[[app]]` con almeno una regola
+`detect`, `[[shared]]` con `used_by` e senza `detect`, stile dei percorsi per sistema (Windows: variabile `%...%` e `\`;
+Linux/macOS: `~/`, `/` o `$VAR`), nessun nome utente, caratteri jolly validi, nomi unici.
+
 Test: `internal/scanner/pathcheck_test.go` (`CheckPath`, `Dictionary.Owner`). Sezione in fondo al report
 HTML, file `husk_path.csv`, elenco in console.
 

@@ -1,0 +1,129 @@
+name: Add a program to the dictionary
+description: Report the folders or files a program leaves behind, so Husk can recognize them.
+title: "[dictionary] "
+labels: ["dictionary"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! Husk knows a program from its **dictionary** (`dictionary/<system>.toml`).
+        Fill in what you know; a maintainer will turn it into an entry.
+        If you are comfortable with TOML, you can open a pull request instead: see
+        [CONTRIBUTING.md](https://github.com/goodmagma/husk/blob/main/CONTRIBUTING.md).
+
+        **Privacy:** write paths with variables (`%APPDATA%\Foo`, `~/.config/foo`), never with your user name
+        (`C:\Users\mario\...`, `/home/mario/...`).
+
+  - type: dropdown
+    id: system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: true
+
+  - type: input
+    id: program
+    attributes:
+      label: Program name and publisher
+      description: As shown in the installed programs list, the Start menu, the package manager or /Applications.
+      placeholder: "Foo Editor, by Foo Ltd"
+    validations:
+      required: true
+
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://example.com
+    validations:
+      required: false
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How was it installed?
+      options:
+        - Installer (setup.exe, .msi, .pkg, .dmg)
+        - Microsoft Store
+        - Package manager (winget, Scoop, Chocolatey, apt, dnf, pacman, Homebrew, ...)
+        - Flatpak or Snap
+        - Portable / zip
+        - Language tool (pip, uv, npm, cargo, go install, ...)
+        - Other or unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: state
+    attributes:
+      label: Is the program still installed?
+      options:
+        - "No: these are leftovers after uninstalling it"
+        - "Yes: I am reporting the folders it creates"
+    validations:
+      required: true
+
+  - type: textarea
+    id: paths
+    attributes:
+      label: Folders and files it leaves behind
+      description: |
+        One per line, with what each one contains: `app` (program files), `config`, `cache`, `models`,
+        `logs`, `dump` (crash dumps), `data` (user data: documents, projects, saves).
+        Wildcards are fine for files: `%USERPROFILE%\foo_*.log`.
+      placeholder: |
+        %APPDATA%\Foo            config
+        %LOCALAPPDATA%\Foo\Cache  cache
+        %USERPROFILE%\.foo        data
+        %USERPROFILE%\foo_*.log   logs
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: detect
+    attributes:
+      label: How to tell it is installed
+      description: |
+        Anything that exists only while the program is installed: its name in the installed programs list,
+        the command in PATH (`foo`), the executable (`%LOCALAPPDATA%\Programs\Foo\Foo.exe`), the package name.
+      placeholder: |
+        Installed programs list: "Foo Editor 2.1"
+        Command in PATH: foo
+    validations:
+      required: false
+
+  - type: dropdown
+    id: shared
+    attributes:
+      label: Are these folders used by other programs too?
+      description: For example a model cache shared by several AI tools, or a folder created by a library.
+      options:
+        - "No, only by this program"
+        - "Yes (explain below)"
+        - "I don't know"
+    validations:
+      required: true
+
+  - type: textarea
+    id: husk
+    attributes:
+      label: What Husk shows now (optional)
+      description: |
+        The line of `husk -v --show all`, or the entry from `husk_suggestions.toml` in the report folder.
+        Remove your user name if it appears.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything useful, e.g. "the models folder can be moved in the settings", or how to clean it up.
+    validations:
+      required: false

@@ -1,6 +1,6 @@
 # Husk dictionary of known programs (macOS)
 #
-# Same format as windows.toml (see the header of that file).
+# Same format as windows.toml (see the header of that file and CONTRIBUTING.md).
 # Paths accept ~, $VARIABLES, ${VARIABLES} and wildcards.
 # detect.names is matched against the apps in /Applications and ~/Applications
 # (name and bundle identifier), pkgutil packages and Homebrew.

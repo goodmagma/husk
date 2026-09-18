@@ -1,6 +1,6 @@
 # Husk dictionary of known programs (Linux)
 #
-# Same format as windows.toml (see the header of that file).
+# Same format as windows.toml (see the header of that file and CONTRIBUTING.md).
 # Paths accept ~, $VARIABLES, ${VARIABLES} and wildcards.
 # detect.names is matched against packages (dpkg, rpm, pacman, Flatpak, Snap)
 # and against menu application names (.desktop files).

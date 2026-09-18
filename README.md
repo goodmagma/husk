@@ -126,6 +126,11 @@ Report files (`--report`): each scan creates a `husk_<date>_<time>` folder insid
 `husk_path.csv` and `husk_suggestions.toml`.
 `husk-gui` always writes them and shows the same text as the CLI in its log.
 
+## Contributing
+
+Missing a program? Report it with the [Add a program](https://github.com/goodmagma/husk/issues/new?template=new-program.yml)
+form, or add it to the dictionary yourself: see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Local configuration
 
 - `dictionary/{windows,linux,darwin}.toml`: built-in dictionary, embedded in the executables.

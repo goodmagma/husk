@@ -3,15 +3,18 @@
 # [[app]]      a program: when it is not detected as installed, its folders are orphans
 #   name            display name; an entry with the same name in apps.user.toml extends this one:
 #                   detect and paths are merged, category, notes and clean (when set) replace these
-#   category        ai, development, browser, communication, games, multimedia, utilities, ...
+#   category        ai, browser, communication, development, driver, games, multimedia, utilities
 #   detect.names    patterns (* and ?) matched against registry, Store and Start menu names
 #   detect.exe      executables looked up in PATH (without extension)
 #   detect.files    files or folders whose presence means the program is installed
 #   paths           program folders: { path = '...', kind = "..." }
-#                   kind: app, config, cache, models, logs, data (user data: careful!)
+#                   kind: app, config, cache, models, logs, dump, data (user data: careful!)
 #   notes, clean    free notes and the suggested cleanup command
 #
 # [[shared]]   folders used by several programs (caches, models, tools): listed separately, never as orphans
+#   used_by         which programs use the folder (required)
+#
+# How to add a program: CONTRIBUTING.md. The rules are checked by dictionary_test.go.
 #
 # Paths accept %VARIABLES% and wildcards. Use single-quoted strings
 # so backslashes do not need to be doubled.
