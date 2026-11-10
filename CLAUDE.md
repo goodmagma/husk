@@ -98,7 +98,7 @@ compilato per l'host (`GOOS=$(go env GOHOSTOS)`): il primo tag `v0.1.1` è falli
 con "exec format error" perché ereditava `GOOS=windows` (corretto il 17/09/2026, verificato in Docker). In release la GUI
 Windows si compila con `build.sh` e non più con `fyne package` (avrebbe creato un secondo .syso).
 Icone: `assets/icon.png` (256) e `icon-48/32/16.png`.
-Versione attuale **0.1.1** (non ancora rilasciata; 0.1.0 è il tag su `f8e4f36`): va aggiornata in
+Versione attuale **0.1.1**, pubblicata il 18/09/2026 (tag su `8e5cac6`; 0.1.0 è il tag su `f8e4f36`): va aggiornata in
 `internal/version/version.go`, `cmd/husk-gui/FyneApp.toml`, i due `winres.json` e il README.
 
 Fonti per sistema:
@@ -250,7 +250,8 @@ revisione degli orfani (17/09/2026), scheletro Go con CLI Windows verificata.
    (in locale annullare la modifica). Le API GitHub senza token hanno un limite di 60 richieste/ora:
    monitorare con intervalli lunghi. `softprops/action-gh-release` v3 carica in parallelo e al secondo tag
    `v0.1.1` è fallito con "Error creating asset temp dir" lasciando la release in **bozza** senza un file:
-   ora `preserve_order: true` (caricamento sequenziale). Le bozze non compaiono nelle API senza token. Da fare: provare i pacchetti su Linux e macOS reali; firma del
+   ora `preserve_order: true` (caricamento sequenziale). **Release 0.1.1 pubblicata il 18/09/2026**
+   (https://github.com/goodmagma/husk/releases/tag/v0.1.1, tag su `8e5cac6`, 12 file come la 0.1.0). Le bozze non compaiono nelle API senza token. Da fare: provare i pacchetti su Linux e macOS reali; firma del
    codice (Windows SmartScreen, macOS Gatekeeper) non ancora presente.
 5. Residui come file: **fatto per la 0.1.1** (vedi "Scansione dei file"); mancano i `.plist` di macOS
    (`~/Library/Preferences` contiene soprattutto file) e i file sciolti fuori dal profilo.
